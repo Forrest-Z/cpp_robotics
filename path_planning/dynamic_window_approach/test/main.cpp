@@ -8,7 +8,7 @@ int main()
 {
     std::cout << "Hello, World!" << std::endl;
 
-    dynamic_window_approach::DynamicWindowApproach dwa;
+    cpp_robotics::DynamicWindowApproach dwa;
     dwa.testDynamicWindowApproach();
 
     return 0;

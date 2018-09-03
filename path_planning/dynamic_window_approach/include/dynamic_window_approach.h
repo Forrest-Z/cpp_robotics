@@ -11,7 +11,7 @@
 
 #include "matplotlibcpp.h" // for display
 
-namespace dynamic_window_approach
+namespace cpp_robotics
 {
     struct Config
     {

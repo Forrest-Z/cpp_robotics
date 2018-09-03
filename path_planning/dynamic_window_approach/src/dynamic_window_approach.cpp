@@ -4,7 +4,7 @@
 
 #include "dynamic_window_approach.h"
 
-namespace dynamic_window_approach
+namespace cpp_robotics
 {
     DynamicWindowApproach::DynamicWindowApproach()
     {
