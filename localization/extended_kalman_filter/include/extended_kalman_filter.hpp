@@ -5,6 +5,11 @@
 #ifndef EXTENDED_KALMAN_FILTER_EXTENDED_KALMAN_FILTER_HPP
 #define EXTENDED_KALMAN_FILTER_EXTENDED_KALMAN_FILTER_HPP
 
+#include "Eigen/Dense"
+
+using Eigen::VectorXd;
+using Eigen::MatrixXd;
+
 namespace cpp_robotics {
 
     class ExtendedKalmanFilter {
@@ -15,7 +20,9 @@ namespace cpp_robotics {
 
     private:
 
-        void calcInput();
+        void observation();
+        MatrixXd motion_model(const MatrixXd& x, const MatrixXd& u);
+        VectorXd calcInput();
 
         const double DT = 0.1;        // time tick [s]
         const double SIM_TIME = 50.0; // simulation time [s]
