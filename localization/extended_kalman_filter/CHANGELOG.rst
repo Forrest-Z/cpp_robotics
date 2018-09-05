@@ -2,6 +2,10 @@
 Changelog for package extended_kalman_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.1 (2018-07-09)
+0.0.1 (2018-09-05)
 ------------------
-* first test ok
+* finish first version, need to test
+
+0.0.0 (2018-09-03)
+------------------
+* start coding
