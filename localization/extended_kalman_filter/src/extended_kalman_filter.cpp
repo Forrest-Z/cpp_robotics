@@ -50,7 +50,6 @@ namespace cpp_robotics {
         MatrixXd xEst = MatrixXd::Zero(4, 1);
         MatrixXd xTrue = MatrixXd::Zero(4, 1);
         MatrixXd PEst = MatrixXd::Identity(4, 4);
-
         MatrixXd xDR = MatrixXd::Zero(4, 1);  // Dead reckoning
 
         // history
@@ -113,7 +112,7 @@ namespace cpp_robotics {
 
                 matplotlibcpp::axis("equal");
                 matplotlibcpp::grid(true);
-                matplotlibcpp::pause(0.001);
+                matplotlibcpp::pause(0.0001);
             }
         }
 
@@ -238,7 +237,7 @@ namespace cpp_robotics {
         xTrue = motionModel(xTrue, u);
 
         // add noise to gps x-y
-        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0); // TODO: check use rand() correct
+        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0);
         double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
         z.resize(1, 2);
         z << zx, zy;

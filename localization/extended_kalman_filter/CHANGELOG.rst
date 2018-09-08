@@ -7,6 +7,8 @@ Changelog for package extended_kalman_filter
 * add display
 * fix randn function
 * add plot covariance ellipse
+* add function brief
+* finish first version test
 
 0.0.1 (2018-09-05)
 ------------------

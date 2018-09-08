@@ -27,39 +27,44 @@ namespace cpp_robotics {
         void plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst);
 
         /**
-         * @arg MatrixXd z(1, 2)
-         * @arg MatrixXd u(2, 1)
-         * @arg MatrixXd xEst(4, 1)
-         * @arg MatrixXd PEst(4, 4)
+         * @brief   ekf etimation
+         * @arg     MatrixXd z(1, 2) - sensor observation robot state
+         * @arg     MatrixXd u(2, 1) - robot ctrl speed
+         * @arg     MatrixXd xEst(4, 1) - robot etimation state
+         * @arg     MatrixXd PEst(4, 4) -
          */
         void ekfEstimation(const MatrixXd& z, const MatrixXd& u,
                            MatrixXd& xEst, MatrixXd& PEst);
 
         /**
-         * @arg MatrixXd x(4, 1)
-         * @return MatrixXd(2, 4)
+         * @brief   Jacobian of Observation Model
+         * @arg     MatrixXd x(4, 1)
+         * @return  MatrixXd(2, 4)
          */
         MatrixXd jacobH(const MatrixXd& x);
 
         /**
-         * @arg MatrixXd x(4, 1)
-         * @arg MatrixXd u(2, 1)
-         * @return MatrixXd(4, 4)
+         * @brief   Jacobian of Motion Model
+         * @arg     MatrixXd x(4, 1)
+         * @arg     MatrixXd u(2, 1)
+         * @return  MatrixXd(4, 4)
          */
         MatrixXd jacobF(const MatrixXd& x, const MatrixXd& u);
 
         /**
-         * @arg MatrixXd x(4, 1)
-         * @return MatrixXd(2, 1)
+         * @brief   observation Model
+         * @arg     MatrixXd x(4, 1)
+         * @return  MatrixXd(2, 1)
          */
         MatrixXd observationModel(const MatrixXd& x);
 
         /**
-         * @arg MatrixXd u(2, 1)
-         * @arg MatrixXd xTrue(4, 1)
-         * @arg MatrixXd z(1, 2)
-         * @arg MatrixXd xd(4, 1)
-         * @arg MatrixXd ud(2, 1)
+         * @brief   get observation
+         * @arg     MatrixXd u(2, 1) - robot ctrl speed
+         * @arg     MatrixXd xTrue(4, 1) - robot true state
+         * @arg     MatrixXd z(1, 2) - sensor observation robot state
+         * @arg     MatrixXd xd(4, 1) - robot state with noise robot input
+         * @arg     MatrixXd ud(2, 1) - noise robot ctrl speed
          */
         void observation(const MatrixXd& u,
                          MatrixXd& xTrue,
@@ -68,14 +73,16 @@ namespace cpp_robotics {
                          MatrixXd& ud);
 
         /**
-         * @arg MatrixXd x(4, 1)
-         * @arg MatrixXd u(2, 1)
-         * @return MatrixXd(4, 1)
+         * @brief   robot motion mode
+         * @arg     MatrixXd x(4, 1) - robot state
+         * @arg     MatrixXd u(2, 1) - robot ctrl speed
+         * @return  MatrixXd(4, 1) - new robot state
          */
         MatrixXd motionModel(const MatrixXd& x, const MatrixXd& u);
 
         /**
-         * @return MatrixXd(2, 1)
+         * @brief   get robot ctrl speed(v,w) input
+         * @return  MatrixXd(2, 1) - robot ctrl speed
          */
         MatrixXd calcInput();
 
