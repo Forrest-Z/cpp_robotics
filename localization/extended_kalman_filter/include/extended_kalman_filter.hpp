@@ -5,6 +5,9 @@
 #ifndef EXTENDED_KALMAN_FILTER_EXTENDED_KALMAN_FILTER_HPP
 #define EXTENDED_KALMAN_FILTER_EXTENDED_KALMAN_FILTER_HPP
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "Eigen/Dense"
 
 using Eigen::MatrixXd;
@@ -20,6 +23,8 @@ namespace cpp_robotics {
         void test();
 
     private:
+
+        void plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst);
 
         /**
          * @arg MatrixXd z(1, 2)
@@ -73,6 +78,18 @@ namespace cpp_robotics {
          * @return MatrixXd(2, 1)
          */
         MatrixXd calcInput();
+
+        inline double randu() {
+            return (double) rand()/RAND_MAX;
+        }
+
+        inline double randn2(double mu, double sigma) {
+            return mu + (rand()%2 ? -1.0 : 1.0)*sigma*pow(-log(0.99999*randu()), 0.5);
+        }
+
+        inline double randn() {
+            return randn2(0, 1.0);
+        }
 
         // Estimation parameter of EKF
         MatrixXd Q_;

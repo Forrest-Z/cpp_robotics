@@ -5,12 +5,14 @@
 #include "extended_kalman_filter.hpp"
 
 #include <iostream>
-#include <stdlib.h>
-#include <time.h>
+#include <vector>
 
 #include "Eigen/Dense"
 
+#include "matplotlibcpp.h" // for display
+
 using Eigen::MatrixXd;
+using Eigen::EigenSolver;
 
 namespace cpp_robotics {
 
@@ -52,10 +54,14 @@ namespace cpp_robotics {
         MatrixXd xDR = MatrixXd::Zero(4, 1);  // Dead reckoning
 
         // history
-        MatrixXd hxEst = xEst;
-        MatrixXd hxTrue = xTrue;
-        MatrixXd hxDR = xTrue;
-        MatrixXd hz = MatrixXd::Zero(1, 2);
+        std::vector<MatrixXd> hxEst;
+        hxEst.push_back(xEst);
+        std::vector<MatrixXd> hxTrue;
+        hxTrue.push_back(xTrue);
+        std::vector<MatrixXd> hxDR;
+        hxDR.push_back(xTrue);
+        std::vector<MatrixXd> hz;
+        hz.push_back(MatrixXd::Zero(1, 2));
 
         while (SIM_TIME >= time) {
             time += DT;
@@ -67,15 +73,61 @@ namespace cpp_robotics {
             ekfEstimation(z, u, xEst, PEst);
 
             // store data history
-//            hxEst = np.hstack((hxEst, xEst))
-//            hxDR = np.hstack((hxDR, xDR))
-//            hxTrue = np.hstack((hxTrue, xTrue))
-//            hz = np.vstack((hz, z))
+            hxEst.push_back(xEst);
+            hxDR.push_back(xDR);
+            hxTrue.push_back(xTrue);
+            hz.push_back(z);
 
             if (show_animation_) {
+                matplotlibcpp::clf();
 
+                std::vector<float> Px_hz, Py_hz;
+                for (int i = 0; i < hz.size(); i++) {
+                    Px_hz.push_back(hz[i](0, 0));
+                    Py_hz.push_back(hz[i](0, 1));
+                }
+                matplotlibcpp::plot(Px_hz, Py_hz, ".g");
+
+                std::vector<float> Px_hxTrue, Py_hxTrue;
+                for (int i = 0; i < hxTrue.size(); i++) {
+                    Px_hxTrue.push_back(hxTrue[i](0, 0));
+                    Py_hxTrue.push_back(hxTrue[i](1, 0));
+                }
+                matplotlibcpp::plot(Px_hxTrue, Py_hxTrue, "-b");
+
+                std::vector<float> Px_hxDR, Py_hxDR;
+                for (int i = 0; i < hxDR.size(); i++) {
+                    Px_hxDR.push_back(hxDR[i](0, 0));
+                    Py_hxDR.push_back(hxDR[i](1, 0));
+                }
+                matplotlibcpp::plot(Px_hxDR, Py_hxDR, "-k");
+
+                std::vector<float> Px_hxEst, Py_hxEst;
+                for (int i = 0; i < hxEst.size(); i++) {
+                    Px_hxEst.push_back(hxEst[i](0, 0));
+                    Py_hxEst.push_back(hxEst[i](1, 0));
+                }
+                matplotlibcpp::plot(Px_hxEst, Py_hxEst, "-r");
+
+                plotCovarianceEllipse(xEst, PEst);
+
+                matplotlibcpp::axis("equal");
+                matplotlibcpp::grid(true);
+                matplotlibcpp::pause(0.001);
             }
         }
+
+        std::cout << "Extended_kalman_filter finish." << std::endl;
+    }
+
+    void EKF::plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst) {
+        MatrixXd Pxy(2, 2);
+        Pxy <<  PEst(0, 0), PEst(0, 1),
+                PEst(1, 0), PEst(1, 1);
+
+        EigenSolver<MatrixXd> es(Pxy);
+        std::cout << "The eigenvalues of A are:" << std::endl << es.eigenvalues() << std::endl;
+        std::cout << "The matrix of eigenvectors, V, is:" << std::endl << es.eigenvectors() << std::endl << std::endl;
     }
 
     void EKF::ekfEstimation(const MatrixXd& z, const MatrixXd& u,
@@ -86,16 +138,14 @@ namespace cpp_robotics {
         MatrixXd PPred = jF * PEst * jF.transpose() + Q_;   // MatrixXd PPred(4, 4)
 
         // Update
-        MatrixXd jH = jacobH(xPred);                    // MatrixXd jH(2, 4)
-        MatrixXd zPred = observationModel(xPred);       // MatrixXd zPred(1, 2)
-        MatrixXd y = z.transpose() - zPred;             // MatrixXd y(2, 1)
-        MatrixXd S = jH * PPred * jH.transpose() + R_;  // MatrixXd S(2, 2)
-        MatrixXd K = PPred * jH.transpose() * S.inverse();  // MatrixXd K(4, 1)
-        std::cout << "K:" << std::endl << xEst << std::endl;
-        xEst = xPred + K * y;   // MatrixXd xEst(4, 1)
-        std::cout << "xEst:" << std::endl << xEst << std::endl;
-        std::cout << "xEst size:" << xEst.size() << std::endl;
-//        PEst = (np.eye(len(xEst)) - K * jH) * PPred;
+        MatrixXd jH = jacobH(xPred);                        // MatrixXd jH(2, 4)
+        MatrixXd zPred = observationModel(xPred);           // MatrixXd zPred(2, 1)
+        MatrixXd y = z.transpose() - zPred;                 // MatrixXd y(2, 1)
+        MatrixXd S = jH * PPred * jH.transpose() + R_;      // MatrixXd S(2, 2)
+        MatrixXd K = PPred * jH.transpose() * S.inverse();  // MatrixXd K(4, 2)
+//        std::cout << "K:" << std::endl << K << std::endl;
+
+        xEst = xPred + K * y;
         PEst = (MatrixXd::Identity(xEst.size(), xEst.size()) - K * jH) * PPred;
     }
 
@@ -153,14 +203,14 @@ namespace cpp_robotics {
         xTrue = motionModel(xTrue, u);
 
         // add noise to gps x-y
-        double zx = xTrue(0, 0) + rand() * Qsim_(0, 0); // TODO: check use rand() correct
-        double zy = xTrue(1, 0) + rand() * Qsim_(1, 1);
+        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0); // TODO: check use rand() correct
+        double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
         z.resize(1, 2);
         z << zx, zy;
 
         // add noise to input
-        double ud1 = u(0, 0) + rand() * Rsim_(0, 0);
-        double ud2 = u(1, 0) + rand() * Rsim_(1, 1);
+        double ud1 = u(0, 0) + randn() * Rsim_(0, 0);
+        double ud2 = u(1, 0) + randn() * Rsim_(1, 1);
         ud.resize(2, 1);
         ud << ud1, ud2;
 
@@ -181,7 +231,7 @@ namespace cpp_robotics {
                 0.0, DT,
                 1.0, 0.0;
 
-        MatrixXd l_x = F * x + B * u; // TODO: check x and u size
+        MatrixXd l_x = F * x + B * u;
 
         return l_x;
     }
