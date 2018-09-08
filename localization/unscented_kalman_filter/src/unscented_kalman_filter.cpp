@@ -26,6 +26,36 @@ namespace cpp_robotics {
 
     UKF::~UKF() {}
 
+    MatrixXd UKF::generateSigmaPoints(const MatrixXd& xEst,
+                                      const MatrixXd& PEst,
+                                      const MatrixXd& gamma) {
+        MatrixXd sigma = xEst;
+
+        return sigma;
+    }
+
+    void UKF::observation(const MatrixXd& u,
+                          MatrixXd& xTrue,
+                          MatrixXd& z,
+                          MatrixXd& xd,
+                          MatrixXd& ud) {
+        xTrue = motionModel(xTrue, u);
+
+        // add noise to gps x-y
+        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0);
+        double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
+        z.resize(1, 2);
+        z << zx, zy;
+
+        // add noise to input
+        double ud1 = u(0, 0) + randn() * Rsim_(0, 0);
+        double ud2 = u(1, 0) + randn() * Rsim_(1, 1);
+        ud.resize(2, 1);
+        ud << ud1, ud2;
+
+        xd = motionModel(xd, ud);
+    }
+
     MatrixXd UKF::observationModel(const MatrixXd& x) {
         // Observation Model
         MatrixXd H(2, 4);

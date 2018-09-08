@@ -18,6 +18,23 @@ namespace cpp_robotics {
 
     private:
 
+        MatrixXd generateSigmaPoints(const MatrixXd& xEst,
+                                     const MatrixXd& PEst,
+                                     const MatrixXd& gamma);
+        /**
+         * @brief   get observation
+         * @arg     MatrixXd u(2, 1) - robot ctrl speed
+         * @arg     MatrixXd xTrue(4, 1) - robot true state
+         * @arg     MatrixXd z(1, 2) - sensor observation robot state
+         * @arg     MatrixXd xd(4, 1) - robot state with noise robot input
+         * @arg     MatrixXd ud(2, 1) - noise robot ctrl speed
+         */
+        void observation(const MatrixXd& u,
+                         MatrixXd& xTrue,
+                         MatrixXd& z,
+                         MatrixXd& xd,
+                         MatrixXd& ud);
+
         /**
          * @brief   observation Model
          * @arg     MatrixXd x(4, 1)
@@ -38,6 +55,18 @@ namespace cpp_robotics {
          * @return  MatrixXd(2, 1) - robot ctrl speed
          */
         MatrixXd calcInput();
+
+        inline double randu() {
+            return (double) rand()/RAND_MAX;
+        }
+
+        inline double randn2(double mu, double sigma) {
+            return mu + (rand()%2 ? -1.0 : 1.0)*sigma*pow(-log(0.99999*randu()), 0.5);
+        }
+
+        inline double randn() {
+            return randn2(0, 1.0);
+        }
 
         // Estimation parameter of UKF
         MatrixXd Q_;
