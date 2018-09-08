@@ -126,8 +126,43 @@ namespace cpp_robotics {
                 PEst(1, 0), PEst(1, 1);
 
         EigenSolver<MatrixXd> es(Pxy);
-        std::cout << "The eigenvalues of A are:" << std::endl << es.eigenvalues() << std::endl;
-        std::cout << "The matrix of eigenvectors, V, is:" << std::endl << es.eigenvectors() << std::endl << std::endl;
+        MatrixXd eigval = es.eigenvalues().real();
+        MatrixXd eigvec = es.eigenvectors().real();
+
+        int bigind, smallind;
+        if (eigval(0, 0) >= eigval(1, 0)) {
+            bigind = 0;
+            smallind = 1;
+        }
+        else {
+            bigind = 1;
+            smallind = 0;
+        }
+
+        double a = sqrt(eigval(bigind, 0));
+        double b = sqrt(eigval(smallind, 0));
+
+        int xy_num = (2*M_PI + 0.1) / 0.1 + 1;
+        MatrixXd xy(2, xy_num);
+        double it = 0.0;
+        for (int i=0; i<xy_num; i++) {
+            xy(0, i) = a * cos(it);
+            xy(1, i) = b * sin(it);
+            it += 0.1;
+        }
+
+        double angle = atan2(eigvec(bigind, 1), eigvec(bigind, 0));
+        MatrixXd R(2, 2);
+        R <<    cos(angle), sin(angle),
+                -sin(angle), cos(angle);
+        MatrixXd fx = R * xy;
+
+        std::vector<float> Px_fx, Py_fx;
+        for (int i = 0; i < fx.cols(); i++) {
+            Px_fx.push_back(fx(0, i) + xEst(0, 0));
+            Py_fx.push_back(fx(1, i) + xEst(1, 0));
+        }
+        matplotlibcpp::plot(Px_fx, Py_fx, "--r");
     }
 
     void EKF::ekfEstimation(const MatrixXd& z, const MatrixXd& u,
