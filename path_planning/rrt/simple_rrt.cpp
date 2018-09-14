@@ -159,6 +159,8 @@ namespace cpp_robotics
             }
         }
 
+    private:
+
         int getNearestListIndex(NodeListType nodeList, Node rnd)
         {
             double minind = std::numeric_limits<double>::infinity();
@@ -300,8 +302,6 @@ namespace cpp_robotics
             cv::imshow("display_img",display_img);
             cv::waitKey(0);
         }
-
-    private:
 
         Node start;
         Node end;
