@@ -57,7 +57,8 @@ namespace cpp_robotics {
 
                 matplotlibcpp::axis("equal");
                 matplotlibcpp::grid(true);
-                matplotlibcpp::pause(0.0001); // FIXME: use this will cause rand fail
+                matplotlibcpp::pause(1.0);  // FIXME: use this in ubuntu14 will cause rand() fail,
+                                            // FIXME: ubuntu16 did'nt have this bug
             }
         }
 
