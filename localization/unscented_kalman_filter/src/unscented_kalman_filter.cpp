@@ -13,6 +13,8 @@ using Eigen::MatrixXd;
 namespace cpp_robotics {
 
     UKF::UKF() {
+        srand(time(0));
+
         Q_ = MatrixXd(4, 4);
         Q_ <<   0.1, 0, 0, 0,
                 0, 0.1, 0, 0,
