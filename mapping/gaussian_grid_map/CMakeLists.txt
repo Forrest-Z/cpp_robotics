@@ -17,7 +17,7 @@ include_directories(
 add_executable(gaussian_grid_map
         test/main.cpp
         src/gaussian_grid_map.cpp
-        )
+        include/norm.hpp)
 target_link_libraries(gaussian_grid_map
         ${OpenCV_LIBRARIES}
         ${PYTHON_LIBRARIES}
