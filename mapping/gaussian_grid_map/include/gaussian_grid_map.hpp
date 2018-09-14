@@ -7,6 +7,8 @@
 
 #include "Eigen/Dense"
 
+#include "norm.hpp"
+
 using Eigen::MatrixXd;
 
 namespace cpp_robotics {
@@ -34,7 +36,7 @@ namespace cpp_robotics {
                                double& miny, double& maxy,
                                double& xw, double& yw);
 
-        void drawHeatmap(const double& data,
+        void drawHeatmap(const MatrixXd& data,
                          const double& minx, const double& maxx,
                          const double& miny, const double& maxy,
                          const double& xyreso);
@@ -44,6 +46,8 @@ namespace cpp_robotics {
         inline double randu() {
             return (double) rand()/RAND_MAX;
         }
+
+        Norm norm;
 
         const double EXTEND_AREA = 10.0;    // [m] grid map extention length
 
