@@ -18,7 +18,6 @@ namespace cpp_robotics
 {
     bool RRTDubis::Planning(std::vector<Node>& path, bool animation)
     {
-        // TODO: clear node_list_ ?
         node_list_.push_back(start_);
 
         for(int i=0; i<max_iter_; i++)
@@ -35,11 +34,6 @@ namespace cpp_robotics
                 rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
                 rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
             }
-
-            std::cout << "rnd x:" << rnd.x << std::endl;
-            std::cout << "rnd y:" << rnd.y << std::endl;
-            std::cout << "rnd yaw:" << rnd.yaw << std::endl;
-            std::cout << std::endl;
 
             /// Find nearest node
             int nind = getNearestListIndex(node_list_, rnd);
@@ -68,6 +62,7 @@ namespace cpp_robotics
         }
 
         path = genFinalCourse(lastIndex);
+        std::cout << "path node size:" << path.size() << std::endl;
         if(animation)
         {
             drawPath(path);
@@ -78,8 +73,6 @@ namespace cpp_robotics
 
     std::vector<Node> RRTDubis::genFinalCourse(int goalind)
     {
-        // FIXME: goalind ?
-
         std::vector<Node> path;
         path.push_back(end_);
 
@@ -104,7 +97,7 @@ namespace cpp_robotics
                 double dx = obstacle_list[i].x - node.path_x[j];
                 double dy = obstacle_list[i].y - node.path_y[j];
                 double d = sqrt(pow(dx,2) + pow(dy,2));
-                if(d <= pow(obstacle_list[i].size,2))
+                if(d <= obstacle_list[i].size)
                 {
                     return false; // collision
                 }
@@ -130,6 +123,12 @@ namespace cpp_robotics
                                         curvature,
                                         px, py, pyaw,
                                         mode, cost);
+
+//        matplotlibcpp::clf();
+//        matplotlibcpp::plot(px, py, "b");
+//        matplotlibcpp::axis("equal");
+//        matplotlibcpp::grid(true);
+//        matplotlibcpp::pause(0.001);
 
         Node new_node = nearest_node;
         new_node.x = px.back();
@@ -166,17 +165,17 @@ namespace cpp_robotics
         double mincost = std::numeric_limits<double>::infinity();
         for(int i=0; i<goalinds.size(); i++)
         {
-            if(node_list_[i].cost < mincost)
+            if(node_list_[goalinds[i]].cost < mincost)
             {
-                mincost = node_list_[i].cost;
+                mincost = node_list_[goalinds[i]].cost;
             }
         }
 
         for(int i=0; i<goalinds.size(); i++)
         {
-            if(node_list_[i].cost == mincost)
+            if(node_list_[goalinds[i]].cost == mincost)
             {
-                return i;
+                return goalinds[i];
             }
         }
 
@@ -221,14 +220,20 @@ namespace cpp_robotics
         }
 
         // draw tree
-        for(int i=0; i< node_list_.size(); i++)
+        for(int i=1; i< node_list_.size(); i++)
         {
-            for(int j=0; j<node_list_[i].path_x.size(); j++)
+            for(int j=0; j<(node_list_[i].path_x.size()-1); j++)
             {
-                cv::circle(display_img,
-                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
-                                     rows - node_list_[i].path_y[j] / map_resolution_),
-                           1, cv::Scalar(255,255,0), -1);
+//                cv::circle(display_img,
+//                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
+//                                     rows - node_list_[i].path_y[j] / map_resolution_),
+//                           1, cv::Scalar(255,255,0), -1);
+                cv::line(display_img,
+                         cv::Point(node_list_[i].path_x[j] / map_resolution_,
+                                   rows - node_list_[i].path_y[j] / map_resolution_),
+                         cv::Point(node_list_[i].path_x[j+1] / map_resolution_,
+                                   rows - node_list_[i].path_y[j+1] / map_resolution_),
+                         cv::Scalar(255,255,0));
             }
         }
 
@@ -253,7 +258,7 @@ namespace cpp_robotics
 
         cv::namedWindow("display_img",0);
         cv::imshow("display_img",display_img);
-        cv::waitKey(0);
+        cv::waitKey(10);
     }
 
     void RRTDubis::drawPath(const std::vector<Node>& path)
@@ -273,26 +278,38 @@ namespace cpp_robotics
         }
 
         // draw tree
-        for(int i=0; i< node_list_.size(); i++)
+        for(int i=1; i< node_list_.size(); i++)
         {
-            for(int j=0; j<node_list_[i].path_x.size(); j++)
+            for(int j=0; j<(node_list_[i].path_x.size()-1); j++)
             {
-                cv::circle(display_img,
-                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
-                                     rows - node_list_[i].path_y[j] / map_resolution_),
-                           1, cv::Scalar(255,255,0), -1);
+//                cv::circle(display_img,
+//                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
+//                                     rows - node_list_[i].path_y[j] / map_resolution_),
+//                           1, cv::Scalar(255,255,0), -1);
+                cv::line(display_img,
+                         cv::Point(node_list_[i].path_x[j] / map_resolution_,
+                                   rows - node_list_[i].path_y[j] / map_resolution_),
+                         cv::Point(node_list_[i].path_x[j+1] / map_resolution_,
+                                   rows - node_list_[i].path_y[j+1] / map_resolution_),
+                         cv::Scalar(255,255,0));
             }
         }
 
         // draw path
-        for(int i=0; i< (path.size()-1); i++)
+        for(int i=1; i< (path.size()-1); i++)
         {
-            for(int j=0; j<path[i].path_x.size(); j++)
+            for(int j=0; j<(path[i].path_x.size()-1); j++)
             {
-                cv::circle(display_img,
-                           cv::Point(path[i].path_x[j] / map_resolution_,
-                                     rows - path[i].path_y[j] / map_resolution_),
-                           1, cv::Scalar(255,0,0), -1);
+//                cv::circle(display_img,
+//                           cv::Point(path[i].path_x[j] / map_resolution_,
+//                                     rows - path[i].path_y[j] / map_resolution_),
+//                           1, cv::Scalar(255,0,0), -1);
+                cv::line(display_img,
+                         cv::Point(path[i].path_x[j] / map_resolution_,
+                                   rows - path[i].path_y[j] / map_resolution_),
+                         cv::Point(path[i].path_x[j+1] / map_resolution_,
+                                   rows - path[i].path_y[j+1] / map_resolution_),
+                         cv::Scalar(255,0,0));
             }
         }
 
