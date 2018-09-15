@@ -52,11 +52,10 @@ namespace cpp_robotics
                 node_list_.push_back(newNode);
             }
 
-//            if(animation && (i % 5 == 0))
-//            {
-//                drawGraph(rnd);
-//            }
-            drawGraph(rnd);
+            if(animation && (i % 5 == 0))
+            {
+                drawGraph(rnd);
+            }
         }
 
         /// generate coruse
@@ -64,10 +63,15 @@ namespace cpp_robotics
 
         if(lastIndex == -1)
         {
+            std::cerr << "Find best node fail." << std::endl;
             return false;
         }
 
         path = genFinalCourse(lastIndex);
+        if(animation)
+        {
+            drawPath(path);
+        }
 
         return true;
     }
@@ -217,14 +221,15 @@ namespace cpp_robotics
         }
 
         // draw tree
-        for(int i=1; i< node_list_.size(); i++)
+        for(int i=0; i< node_list_.size(); i++)
         {
-            cv::line(display_img,
-                     cv::Point(node_list_[i].x / map_resolution_,
-                               rows - node_list_[i].y / map_resolution_),
-                     cv::Point(node_list_[node_list_[i].parent].x / map_resolution_,
-                               rows - node_list_[node_list_[i].parent].y / map_resolution_),
-                     cv::Scalar(255,255,0));
+            for(int j=0; j<node_list_[i].path_x.size(); j++)
+            {
+                cv::circle(display_img,
+                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
+                                     rows - node_list_[i].path_y[j] / map_resolution_),
+                           1, cv::Scalar(255,255,0), -1);
+            }
         }
 
         // draw random node
@@ -248,13 +253,13 @@ namespace cpp_robotics
 
         cv::namedWindow("display_img",0);
         cv::imshow("display_img",display_img);
-        cv::waitKey(100);
+        cv::waitKey(0);
     }
 
     void RRTDubis::drawPath(const std::vector<Node>& path)
     {
-        int cols = (min_rand_ - max_rand_) / map_resolution_;
-        int rows = (min_rand_ - max_rand_) / map_resolution_;
+        int cols = (max_rand_ - min_rand_) / map_resolution_;
+        int rows = (max_rand_ - min_rand_) / map_resolution_;
         cv::Mat display_img(rows, cols, CV_8UC3, cv::Scalar(255,255,255));
 
         // draw obstacles
@@ -268,25 +273,27 @@ namespace cpp_robotics
         }
 
         // draw tree
-        for(int i=1; i< node_list_.size(); i++)
+        for(int i=0; i< node_list_.size(); i++)
         {
-            cv::line(display_img,
-                     cv::Point(node_list_[i].x / map_resolution_,
-                               rows - node_list_[i].y / map_resolution_),
-                     cv::Point(node_list_[node_list_[i].parent].x / map_resolution_,
-                               rows - node_list_[node_list_[i].parent].y / map_resolution_),
-                     cv::Scalar(255,255,0));
+            for(int j=0; j<node_list_[i].path_x.size(); j++)
+            {
+                cv::circle(display_img,
+                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
+                                     rows - node_list_[i].path_y[j] / map_resolution_),
+                           1, cv::Scalar(255,255,0), -1);
+            }
         }
 
         // draw path
         for(int i=0; i< (path.size()-1); i++)
         {
-            cv::line(display_img,
-                     cv::Point(path[i].x / map_resolution_,
-                               rows - path[i].y / map_resolution_),
-                     cv::Point(path[i+1].x / map_resolution_,
-                               rows - path[i+1].y / map_resolution_),
-                     cv::Scalar(255,0,0));
+            for(int j=0; j<path[i].path_x.size(); j++)
+            {
+                cv::circle(display_img,
+                           cv::Point(path[i].path_x[j] / map_resolution_,
+                                     rows - path[i].path_y[j] / map_resolution_),
+                           1, cv::Scalar(255,0,0), -1);
+            }
         }
 
         // draw start node

@@ -3,7 +3,7 @@ project(rrt_dubins)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1)
+#set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1)
 find_package(OpenCV REQUIRED)
 find_package(PythonLibs 2.7)
 

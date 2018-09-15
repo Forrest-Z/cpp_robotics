@@ -62,9 +62,9 @@ namespace cpp_robotics
         RRTDubis(double start[3],
                  double goal[3],
                  double rand_area[2],
-                 ObstacleListType obstacleList,
+                 const ObstacleListType& obstacleList,
                  double goal_sample_rate = 10.0,
-                 unsigned int max_iter = 10000)
+                 unsigned int max_iter = 1000)
         {
             start_ = Node(start[0], start[1], start[2]);
             end_ = Node(goal[0], goal[1], goal[2]);
