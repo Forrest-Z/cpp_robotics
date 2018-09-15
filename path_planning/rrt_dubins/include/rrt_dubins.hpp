@@ -58,6 +58,7 @@ namespace cpp_robotics
     {
     public:
 
+
         RRTDubis(double start[3],
                  double goal[3],
                  double rand_area[2],
@@ -72,37 +73,43 @@ namespace cpp_robotics
             goal_sample_rate_ = goal_sample_rate_;
             max_iter_ = max_iter;
             obstacle_list_ = obstacleList;
+
+            srand(time(0));
         }
+
+        bool Planning(std::vector<Node>& path, bool animation = false);
 
     private:
 
-        Node chooseParent(Node new_node, Node near_node);
+        std::vector<Node> genFinalCourse(int goalind);
 
-        bool collisionCheck(Node node, ObstacleListType obstacle_list);
+//        Node chooseParent(const Node& new_node,
+//                          std::vector<int> nearinds);
 
-        Node steer(Node rnd, int nind);
+        bool collisionCheck(const Node& node,
+                            const ObstacleListType& obstacle_list);
 
-        int getNearestListIndex(NodeListType node_list, Node rnd);
+        Node steer(const Node& rnd, int nind);
+
+        int getBestLastIndex();
+        int getNearestListIndex(const NodeListType& node_list,
+                                const Node& rnd);
 
         Node getRandomPoint();
+
+        void drawGraph(const Node& rnd);
+        void drawPath(const std::vector<Node>& path);
 
         inline double calcDistToGoal(double x, double y)
         {
             double dx = x - end_.x;
             double dy = y - end_.y;
-            double d = sqrt(pow(dx,2) + pow(dy,2));
-            return d;
+            return sqrt(pow(dx,2) + pow(dy,2));
         }
 
         inline double pi2pi(double angle)
         {
-            while (angle >= M_PI) {
-                angle = angle - 2.0*M_PI;
-            }
-
-            while (angle <= -M_PI) {
-                angle = angle + 2.0*M_PI;
-            }
+            return fmod((angle + M_PI), (2*M_PI)) - M_PI;
         }
 
         Node start_;

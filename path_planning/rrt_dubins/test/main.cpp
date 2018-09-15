@@ -9,23 +9,25 @@ int main() {
 //    cpp_robotics::DubinsPath dubins_path;
 //    dubins_path.test_DubinsPath();
 
-    std::vector<double> aa = {1,2,3};
-    for(int i=0; i< aa.size(); i++)
-    {
-        std::cout << "aa:" << aa[i] << std::endl;
-    }
+    std::cout << "start RRT dubins path planning" << std::endl;
 
-    std::vector<double> bb = {5,6,7,8};
-    for(int i=0; i< bb.size(); i++)
-    {
-        std::cout << "bb:" << bb[i] << std::endl;
-    }
+    cpp_robotics::ObstacleListType obstacleList;
+    obstacleList.push_back(cpp_robotics::ObstacleType(5,5,1));
+    obstacleList.push_back(cpp_robotics::ObstacleType(3,6,2));
+    obstacleList.push_back(cpp_robotics::ObstacleType(3,8,2));
+    obstacleList.push_back(cpp_robotics::ObstacleType(3,10,2));
+    obstacleList.push_back(cpp_robotics::ObstacleType(7,5,2));
+    obstacleList.push_back(cpp_robotics::ObstacleType(9,5,2));
 
-    bb = aa;
-    for(int i=0; i< bb.size(); i++)
-    {
-        std::cout << "bb:" << bb[i] << std::endl;
-    }
+    double start[3] = {1,1,0};
+    double goal[3] = {10,10,0};
+    double randArea[2] = {0,15};
+
+    cpp_robotics::RRTDubis rrt_dubins(start, goal, randArea,
+                                      obstacleList);
+
+    std::vector<cpp_robotics::Node> path;
+    rrt_dubins.Planning(path, true);
 
     return 0;
 }

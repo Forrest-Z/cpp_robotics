@@ -5,3 +5,4 @@ Changelog for package rrt_dubins
 0.0.0 (2018-09-15)
 ------------------
 * start coding
+* finish first version
