@@ -36,6 +36,11 @@ namespace cpp_robotics
                 rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
             }
 
+            std::cout << "rnd x:" << rnd.x << std::endl;
+            std::cout << "rnd y:" << rnd.y << std::endl;
+            std::cout << "rnd yaw:" << rnd.yaw << std::endl;
+            std::cout << std::endl;
+
             /// Find nearest node
             int nind = getNearestListIndex(node_list_, rnd);
 
@@ -47,10 +52,11 @@ namespace cpp_robotics
                 node_list_.push_back(newNode);
             }
 
-            if(animation && (i % 5 == 0))
-            {
-                drawGraph(rnd);
-            }
+//            if(animation && (i % 5 == 0))
+//            {
+//                drawGraph(rnd);
+//            }
+            drawGraph(rnd);
         }
 
         /// generate coruse
@@ -83,28 +89,6 @@ namespace cpp_robotics
 
         return path;
     }
-
-    /*Node RRTDubis::chooseParent(const Node& new_node,
-                                std::vector<int> nearinds)
-    {
-        Node parent_node;
-
-        if(nearinds.size() == 0)
-        {
-            parent_node = new_node;
-            return parent_node;
-        }
-
-        for(int i=0; i< nearinds.size(); i++)
-        {
-            double dx = new_node.x - node_list_[i].x;
-            double dy = new_node.y - node_list_[i].y;
-            double d = sqrt(pow(dx, 2) + pow(dy, 2));
-            double theta = atan2(dy, dx);
-
-//            if(collisionCheck())
-        }
-    }*/
 
     bool RRTDubis::collisionCheck(const Node& node,
                                   const ObstacleListType& obstacle_list)
@@ -214,10 +198,6 @@ namespace cpp_robotics
         }
 
         return nind;
-    }
-
-    Node RRTDubis::getRandomPoint()
-    {
     }
 
     void RRTDubis::drawGraph(const Node& rnd)

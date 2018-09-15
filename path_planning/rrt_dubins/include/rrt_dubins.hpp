@@ -83,9 +83,6 @@ namespace cpp_robotics
 
         std::vector<Node> genFinalCourse(int goalind);
 
-//        Node chooseParent(const Node& new_node,
-//                          std::vector<int> nearinds);
-
         bool collisionCheck(const Node& node,
                             const ObstacleListType& obstacle_list);
 
@@ -94,8 +91,6 @@ namespace cpp_robotics
         int getBestLastIndex();
         int getNearestListIndex(const NodeListType& node_list,
                                 const Node& rnd);
-
-        Node getRandomPoint();
 
         void drawGraph(const Node& rnd);
         void drawPath(const std::vector<Node>& path);
