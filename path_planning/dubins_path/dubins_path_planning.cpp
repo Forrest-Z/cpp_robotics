@@ -2,9 +2,9 @@
 #include <vector>
 #include <math.h>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
 
 #include "matplotlibcpp.h"
 
@@ -120,7 +120,7 @@ namespace cpp_robotics
             px.resize(lpx.size());
             py.resize(lpy.size());
             pyaw.resize(lpyaw.size());
-            // TODO: check lpx, lpy and lpyaw size is it the same
+            // TODO: use DubinsPose replace px, py, pyaw as output
             for (int i=0; i<lpx.size(); i++) {
                 px[i] = cos(-syaw) * lpx[i] + sin(-syaw) * lpy[i] + sx;
                 py[i] = - sin(-syaw) * lpx[i] + cos(-syaw) * lpy[i] + sy;
@@ -470,7 +470,7 @@ int main()
     double end_y = -3.0;  // [m]
     double end_yaw = -45.0*M_PI/180.0;  // [rad]
 
-    double curvature = 1.0;
+    double curvature = 1.0; // [m]
 
     std::vector<double> px;
     std::vector<double> py;
