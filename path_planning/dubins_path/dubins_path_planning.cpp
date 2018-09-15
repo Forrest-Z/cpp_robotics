@@ -6,6 +6,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "matplotlibcpp.h"
+
 namespace cpp_robotics
 {
     enum Mode
@@ -126,6 +128,37 @@ namespace cpp_robotics
             }
         }
 
+        std::string modeToString(Mode mode)
+        {
+            std::string string_mode("");
+
+            switch(mode)
+            {
+                case Mode::LSL :
+                    string_mode = "LSL";
+                    break;
+                case Mode::RSR :
+                    string_mode = "RSR";
+                    break;
+                case Mode::LSR :
+                    string_mode = "LSR";
+                    break;
+                case Mode::RSL :
+                    string_mode = "RSL";
+                    break;
+                case Mode::RLR :
+                    string_mode = "RLR";
+                    break;
+                case Mode::LRL :
+                    string_mode = "LRL";
+                    break;
+                default:
+                    break;
+            }
+
+            return string_mode;
+        }
+
     private:
 
         void dubinsPathPlanningFromOrigin(double ex, double ey, double eyaw,
@@ -187,7 +220,7 @@ namespace cpp_robotics
                         break;
                 }
 
-//            if (d_mode.t = NULL) { continue; }
+            if (d_mode.t == 0) { continue; }
 
                 double l_cost = abs(d_mode.t) + abs(d_mode.p) + abs(d_mode.q);
                 if (bcost > l_cost) {
@@ -413,38 +446,14 @@ namespace cpp_robotics
 
         double pi2pi(double angle)
         {
-            return fmod((angle + M_PI), (2*M_PI)) - M_PI;
-        }
-
-        std::string modeToString(Mode mode)
-        {
-            std::string string_mode("");
-
-            switch(mode)
-            {
-                case Mode::LSL :
-                    string_mode = "LSL";
-                    break;
-                case Mode::RSR :
-                    string_mode = "RSR";
-                    break;
-                case Mode::LSR :
-                    string_mode = "LSR";
-                    break;
-                case Mode::RSL :
-                    string_mode = "RSL";
-                    break;
-                case Mode::RLR :
-                    string_mode = "RLR";
-                    break;
-                case Mode::LRL :
-                    string_mode = "LRL";
-                    break;
-                default:
-                    break;
+//            return fmod((angle + M_PI), (2*M_PI)) - M_PI;
+            while (angle >= M_PI) {
+                angle = angle - 2.0*M_PI;
             }
 
-            return string_mode;
+            while (angle <= -M_PI) {
+                angle = angle + 2.0*M_PI;
+            }
         }
     };
 }
@@ -474,6 +483,14 @@ int main()
                                    curvature,
                                    px, py, pyaw,
                                    mode, cost);
+    std::cout << "Final course:" << dubins_path.modeToString(mode) << std::endl;
+    std::cout << "Final cost:" << cost << std::endl;
+
+    matplotlibcpp::clf();
+    matplotlibcpp::plot(px, py, "b");
+    matplotlibcpp::axis("equal");
+    matplotlibcpp::grid(true);
+    matplotlibcpp::show();
 
     return 0;
 }
