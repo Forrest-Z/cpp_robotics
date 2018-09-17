@@ -87,12 +87,6 @@ namespace cpp_robotics
                                 y,
                                 yaw,
                                 directions);
-            matplotlibcpp::clf();
-            matplotlibcpp::plot(x, y, "r");
-            matplotlibcpp::legend();
-            matplotlibcpp::axis("equal");
-            matplotlibcpp::grid(true);
-            matplotlibcpp::show();
 
             // convert global coordinate
             vector<double> xx(x.size());
@@ -120,13 +114,6 @@ namespace cpp_robotics
                                        paths[i].lengths.u / maxc,
                                        paths[i].lengths.v / maxc);
             paths[i].l = paths[i].l / maxc;
-
-            matplotlibcpp::clf();
-            matplotlibcpp::plot(paths[i].x, paths[i].y, "g");
-            matplotlibcpp::legend();
-            matplotlibcpp::axis("equal");
-            matplotlibcpp::grid(true);
-            matplotlibcpp::show();
         }
 
         return paths;
