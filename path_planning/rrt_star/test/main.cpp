@@ -14,7 +14,7 @@ int main() {
     obstacle_list.push_back(cpp_robotics::ObstacleType(9,5,2));
 
     double start[3] = {1,1,0};
-    double goal[3] = {10,10,0};
+    double goal[3] = {6,10,0};
     double randArea[2] = {0,15};
 
     cpp_robotics::RRTStar rrt_star(start, goal, randArea,

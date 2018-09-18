@@ -179,8 +179,8 @@ namespace cpp_robotics {
         for (int i=0; i<nearinds.size(); i++) {
             Node near_node = node_list_[nearinds[i]];
 
-            double dx = new_node.x - new_node.x;
-            double dy = new_node.y - new_node.y;
+            double dx = new_node.x - near_node.x;
+            double dy = new_node.y - near_node.y;
             double d = sqrt(pow(dx, 2) + pow(dy, 2));
 
             double scost = new_node.cost + d;
