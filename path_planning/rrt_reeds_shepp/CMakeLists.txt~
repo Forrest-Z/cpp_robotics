@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.9)
+project(rrt_reeds_shepp)
+
+set(CMAKE_CXX_STANDARD 11)
+
+#set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1)
+find_package(OpenCV REQUIRED)
+find_package(PythonLibs 2.7)
+
+include_directories(
+        include
+        ${OpenCV_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
+)
+
+add_executable(rrt_reeds_shepp
+        src/rrt_dubins.cpp
+        test/main.cpp
+        )
+target_link_libraries(rrt_reeds_shepp
+        ${OpenCV_LIBRARIES}
+        ${PYTHON_LIBRARIES}
+        )
