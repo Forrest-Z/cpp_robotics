@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <complex>
 
 #include "dubins_path_planning.hpp"
 
@@ -37,18 +38,15 @@ namespace cpp_robotics
     {
     public:
 
-        ObstacleType(double x = 0,
-                     double y = 0,
-                     double size = 0)
-        {
-            this->x = x;
-            this->y = y;
-            this->size = size;
-        }
+        ObstacleType(double x,
+                     double y,
+                     double size)
+            : x(x), y(y), size(size)
+        {}
 
-        double x;
-        double y;
-        double size;
+        double x = 0;
+        double y = 0;
+        double size = 0;
     };
 
     using ObstacleListType = vector<ObstacleType>;
@@ -99,7 +97,10 @@ namespace cpp_robotics
         {
             double dx = x - end_.x;
             double dy = y - end_.y;
-            return sqrt(pow(dx,2) + pow(dy,2));
+//            return sqrt(pow(dx,2) + pow(dy,2));
+            std::complex<double> mycomplex(dx,dy);
+            return std::norm(mycomplex);
+
         }
 
         inline double pi2pi(double angle)
