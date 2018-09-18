@@ -89,25 +89,22 @@ namespace cpp_robotics
                                 directions);
 
             // convert global coordinate
-            vector<double> xx(x.size());
+            paths[i].x.resize(x.size());
             for (int j=0; j<x.size(); j++) {
-                xx[j] = cos(-syaw) * x[j] +
-                        sin(-syaw) * y[j] + sx;
+                paths[i].x[j] = cos(-syaw) * x[j] +
+                                sin(-syaw) * y[j] + sx;
             }
-            paths[i].x = xx;
 
-            vector<double> yy(y.size());
+            paths[i].y.resize(y.size());
             for (int j=0; j<y.size(); j++) {
-                yy[j] = -sin(-syaw) * x[j] +
-                        cos(-syaw) * y[j] + sy;
+                paths[i].y[j] = -sin(-syaw) * x[j] +
+                                cos(-syaw) * y[j] + sy;
             }
-            paths[i].y = yy;
 
-            vector<double> yawyaw(y.size());
+            paths[i].yaw.resize(y.size());
             for (int j=0; j<yaw.size(); j++) {
-                yawyaw[j] = pi2pi(yaw[j] + syaw);
+                paths[i].yaw[j] = pi2pi(yaw[j] + syaw);
             }
-            paths[i].yaw = yawyaw;
 
             paths[i].directions = directions;
             paths[i].lengths = Lengths(paths[i].lengths.t / maxc,

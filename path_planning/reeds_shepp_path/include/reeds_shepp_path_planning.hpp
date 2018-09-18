@@ -44,12 +44,12 @@ namespace cpp_robotics {
 
     struct Path {
         Lengths lengths;
-        Ctypes ctypes;
+        Ctypes ctypes;              // path type
         double l = 0.0;
-        vector<double> x;
-        vector<double> y;
-        vector<double> yaw;
-        vector<double> directions;
+        vector<double> x;           // [m], path x pose
+        vector<double> y;           // [m], path y pose
+        vector<double> yaw;         // [rad], path yaw pose
+        vector<double> directions;  // 1-move forward, -1-move back
     };
 
     class ReedsSheppPath {
@@ -57,6 +57,18 @@ namespace cpp_robotics {
 
         void test();
 
+        /**
+         * @brief reeds shepp path planning
+         * @param sx        [m],start pose
+         * @param sy
+         * @param syaw
+         * @param gx        [m],goal pose
+         * @param gy
+         * @param gyaw
+         * @param maxc      [m],curvature
+         * @param step_size [m],path step size
+         * @return planning path
+         */
         Path reedsSheppPathPlanning(double sx, double sy, double syaw,
                                     double gx, double gy, double gyaw,
                                     double maxc, double step_size);
