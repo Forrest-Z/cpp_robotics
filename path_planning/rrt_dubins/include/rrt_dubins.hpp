@@ -75,7 +75,7 @@ namespace cpp_robotics
             srand(time(0));
         }
 
-        bool Planning(std::vector<Node>& path, bool animation = false);
+        bool planning(std::vector<Node>& path, bool animation = false);
 
     private:
 

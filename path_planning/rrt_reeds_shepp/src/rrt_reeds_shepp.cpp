@@ -82,8 +82,13 @@ namespace cpp_robotics
 
         int lastIndex = goalind;
         while(node_list_[lastIndex].parent != -1) {
-            path.push_back(node_list_[lastIndex]);
-            lastIndex = node_list_[lastIndex].parent;
+            Node node = node_list_[lastIndex];
+            for (int i=(node.path_x.size() - 1); i>=0; i--) {
+                path.push_back(Node(node.path_x[i],
+                                    node.path_y[i],
+                                    node.path_yaw[i]));
+            }
+            lastIndex = node.parent;
         }
 
         path.push_back(start_);
@@ -138,7 +143,7 @@ namespace cpp_robotics
         new_node.path_x = path.x;
         new_node.path_y = path.y;
         new_node.path_yaw = path.yaw;
-        new_node.cost += fabs(path.lengths.t) + fabs(path.lengths.u) + fabs(path.lengths.v);
+        new_node.cost += (fabs(path.lengths.t) + fabs(path.lengths.u) + fabs(path.lengths.v));
         new_node.parent = nind;
 
         return new_node;
@@ -173,7 +178,7 @@ namespace cpp_robotics
 
         for(int i=0; i<goalinds.size(); i++)
         {
-            if(node_list_[goalinds[i]].cost == mincost)
+            if(fabs(node_list_[goalinds[i]].cost - mincost) < 0.000001)
             {
                 return goalinds[i];
             }
@@ -183,7 +188,7 @@ namespace cpp_robotics
     }
 
     int RRTReedsShepp::getNearestListIndex(const NodeListType& node_list,
-                                      const Node& rnd)
+                                           const Node& rnd)
     {
         double minind = std::numeric_limits<double>::infinity();
         int nind = -1;
@@ -296,21 +301,14 @@ namespace cpp_robotics
         }
 
         // draw path
-        for(int i=1; i< (path.size()-1); i++)
+        for(int i=0; i< (path.size()-1); i++)
         {
-            for(int j=0; j<(path[i].path_x.size()-1); j++)
-            {
-//                cv::circle(display_img,
-//                           cv::Point(path[i].path_x[j] / map_resolution_,
-//                                     rows - path[i].path_y[j] / map_resolution_),
-//                           1, cv::Scalar(255,0,0), -1);
-                cv::line(display_img,
-                         cv::Point(path[i].path_x[j] / map_resolution_,
-                                   rows - path[i].path_y[j] / map_resolution_),
-                         cv::Point(path[i].path_x[j+1] / map_resolution_,
-                                   rows - path[i].path_y[j+1] / map_resolution_),
-                         cv::Scalar(255,0,0));
-            }
+            cv::line(display_img,
+                     cv::Point(path[i].x / map_resolution_,
+                               rows - path[i].y / map_resolution_),
+                     cv::Point(path[i+1].x / map_resolution_,
+                               rows - path[i+1].y / map_resolution_),
+                     cv::Scalar(255,0,0));
         }
 
         // draw start node

@@ -27,7 +27,7 @@ int main() {
                                       obstacleList);
 
     std::vector<cpp_robotics::Node> path;
-    rrt_dubins.Planning(path, true);
+    rrt_dubins.planning(path, true);
 
     return 0;
 }
