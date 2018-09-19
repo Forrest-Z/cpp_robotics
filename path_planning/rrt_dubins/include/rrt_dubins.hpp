@@ -90,6 +90,8 @@ namespace cpp_robotics
         int getNearestListIndex(const NodeListType& node_list,
                                 const Node& rnd);
 
+        Node getRandomPoint();
+
         void drawGraph(const Node& rnd);
         void drawPath(const std::vector<Node>& path);
 

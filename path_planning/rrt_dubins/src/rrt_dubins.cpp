@@ -23,30 +23,20 @@ namespace cpp_robotics
         for(int i=0; i<max_iter_; i++)
         {
             /// Random Sampling
-            Node rnd;
-            if(fmod(double(i), goal_sample_rate_) <= 0)
-            {
-                rnd = end_;
-            }
-            else
-            {
-                rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-                rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-                rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
-            }
+            auto rnd = getRandomPoint();
 
             /// Find nearest node
-            int nind = getNearestListIndex(node_list_, rnd);
+            auto nind = getNearestListIndex(node_list_, rnd);
 
             /// Expand tree
-            Node newNode = steer(rnd, nind);
+            auto newNode = steer(rnd, nind);
 
             if(collisionCheck(newNode, obstacle_list_))
             {
                 node_list_.push_back(newNode);
             }
 
-            if(animation && (i % 5 == 0))
+            if(animation)
             {
                 drawGraph(rnd);
             }
@@ -206,6 +196,23 @@ namespace cpp_robotics
         }
 
         return nind;
+    }
+
+    Node RRTDubis::getRandomPoint()
+    {
+        Node rnd;
+        double sample_rate = fmod(double(rand()),(100 - 0 + 1)) + 0;
+        if(sample_rate > goal_sample_rate_)
+        {
+            rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+            rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+            rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
+        }
+        else // goal point sampling
+        {
+            rnd = end_;
+        }
+        return rnd;
     }
 
     void RRTDubis::drawGraph(const Node& rnd)
