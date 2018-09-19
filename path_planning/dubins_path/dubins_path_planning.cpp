@@ -220,9 +220,9 @@ namespace cpp_robotics
                         break;
                 }
 
-            if (d_mode.t == 0) { continue; }
+                if (fabs(d_mode.t) < 0.00001) { continue; }
 
-                double l_cost = abs(d_mode.t) + abs(d_mode.p) + abs(d_mode.q);
+                double l_cost = fabs(d_mode.t) + fabs(d_mode.p) + fabs(d_mode.q);
                 if (bcost > l_cost) {
                     b_d_mode = d_mode;
                     bcost = l_cost;
@@ -232,6 +232,7 @@ namespace cpp_robotics
             generateCourse({b_d_mode.t, b_d_mode.p, b_d_mode.q},
                            b_d_mode.mode, c,
                            px, py, pyaw);
+
             mode = b_d_mode.mode;
             cost = bcost;
         }
@@ -446,14 +447,7 @@ namespace cpp_robotics
 
         double pi2pi(double angle)
         {
-//            return fmod((angle + M_PI), (2*M_PI)) - M_PI;
-            while (angle >= M_PI) {
-                angle = angle - 2.0*M_PI;
-            }
-
-            while (angle <= -M_PI) {
-                angle = angle + 2.0*M_PI;
-            }
+            return fmod((angle + M_PI), (2*M_PI)) - M_PI;
         }
     };
 }
