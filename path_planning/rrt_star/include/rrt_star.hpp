@@ -99,6 +99,8 @@ namespace cpp_robotics {
             return std::norm(mycomplex);
         }
 
+        Node getRandomPoint();
+
         void drawGraph(const Node& rnd);
         void drawPath(const NodeListType& path);
 

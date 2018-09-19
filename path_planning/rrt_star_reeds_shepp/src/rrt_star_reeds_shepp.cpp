@@ -14,14 +14,7 @@ namespace cpp_robotics {
         node_list_.push_back(start_);
         for(int i=0; i<max_iter_; i++) {
             /// Random Sampling
-            Node rnd;
-            if (fmod(double(i), goal_sample_rate_) <= 0) {
-                rnd = end_;
-            }
-            else {
-                rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-                rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-            }
+            Node rnd = getRandomPoint();
 
             /// Find nearest node
             auto nind = getNearestListIndex(node_list_, rnd);
@@ -67,7 +60,7 @@ namespace cpp_robotics {
         int lastIndex = goalind;
         while(node_list_[lastIndex].parent != -1) {
             Node node = node_list_[lastIndex];
-            for (int i=0; i<node.path_x.size(); i++) {
+            for (int i=(node.path_x.size()-1); i>=0; i--) {
                 path.push_back(Node(node.path_x[i],
                                     node.path_y[i],
                                     node.path_yaw[i]));
@@ -249,6 +242,23 @@ namespace cpp_robotics {
             }
         }
         return true; // safe
+    }
+
+    Node RRTStarReedsShepp::getRandomPoint()
+    {
+        Node rnd;
+        double sample_rate = fmod(double(rand()),(100 - 0 + 1)) + 0;
+        if(sample_rate > goal_sample_rate_)
+        {
+            rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+            rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+            rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
+        }
+        else // goal point sampling
+        {
+            rnd = end_;
+        }
+        return rnd;
     }
 
     void RRTStarReedsShepp::drawGraph(const Node& rnd) {

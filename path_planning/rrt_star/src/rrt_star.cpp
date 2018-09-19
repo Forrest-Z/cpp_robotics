@@ -14,14 +14,7 @@ namespace cpp_robotics {
         node_list_.push_back(start_);
         for(int i=0; i<max_iter_; i++) {
             /// Random Sampling
-            Node rnd;
-            if (fmod(double(i), goal_sample_rate_) <= 0) {
-                rnd = end_;
-            }
-            else {
-                rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-                rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
-            }
+            Node rnd = getRandomPoint();
 
             /// Find nearest node
             auto nind = getNearestListIndex(node_list_, rnd);
@@ -238,6 +231,22 @@ namespace cpp_robotics {
         }
 
         return true; // safe
+    }
+
+    Node RRTStar::getRandomPoint()
+    {
+        Node rnd;
+        double sample_rate = fmod(double(rand()),(100 - 0 + 1)) + 0;
+        if(sample_rate > goal_sample_rate_)
+        {
+            rnd.x = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+            rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
+        }
+        else // goal point sampling
+        {
+            rnd = end_;
+        }
+        return rnd;
     }
 
     void RRTStar::drawGraph(const Node& rnd) {
