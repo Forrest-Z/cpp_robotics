@@ -11,13 +11,13 @@ namespace cpp_robotics
     void ReedsSheppPath::test() {
         std::cout << "Reeds Shepp path planner sample start!!" << std::endl;
 
-        double start_x = -1.0;  // [m]
-        double start_y = -4.0;  // [m]
-        double start_yaw = -20.0*M_PI/180.0;  // [rad]
+        double start_x = 8;  // [m]
+        double start_y = 13;  // [m]
+        double start_yaw = -2.6414890032837555;  // [rad]
 
-        double end_x = 5.0;  // [m]
-        double end_y = 5.0;  // [m]
-        double end_yaw = 25.0*M_PI/180.0;  // [rad]
+        double end_x = 11.892500419071897;  // [m]
+        double end_y = 10.10522357054367;  // [m]
+        double end_yaw = -2.6414569301607678;  // [rad]
 
         double curvature = 1.0;
         double step_size = 0.1;
@@ -208,7 +208,7 @@ namespace cpp_robotics
         double y = (-s * dx + c * dy) * maxc;
 
         vector<Path> paths;
-        SCS(x, y, dth, paths);
+//        SCS(x, y, dth, paths); // have bug
         CSC(x, y, dth, paths);
         CCC(x, y, dth, paths);
 
@@ -457,7 +457,7 @@ namespace cpp_robotics
     State ReedsSheppPath::SLS(double x, double y, double phi) {
         double l_phi = mod2pi(phi);
         if (y > 0.0 && l_phi > 0.0 && l_phi < M_PI) {
-            double xd = -y / tan(l_phi) + x;
+            double xd = -y / tan(l_phi) + x; // FIXME
             double t = xd - tan(l_phi / 2.0);
             double u = l_phi;
             double v = sqrt(pow(x - xd, 2) + pow(y, 2)) - tan(l_phi / 2.0);
