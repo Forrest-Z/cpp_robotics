@@ -89,21 +89,30 @@ namespace cpp_robotics
                                 directions);
 
             // convert global coordinate
-            paths[i].x.resize(x.size());
+//            paths[i].x.resize(x.size());
+            paths[i].x.clear();
+            std::cout << "x.size:" << x.size() <<std::endl;
             for (int j=0; j<x.size(); j++) {
-                paths[i].x[j] = cos(-syaw) * x[j] +
-                                sin(-syaw) * y[j] + sx;
+//                paths[i].x[j] = cos(-syaw) * x[j] +
+//                                sin(-syaw) * y[j] + sx;
+                paths[i].x.push_back(cos(-syaw) * x[j] +
+                                     sin(-syaw) * y[j] + sx);
             }
 
-            paths[i].y.resize(y.size());
+//            paths[i].y.resize(y.size());
+            paths[i].y.clear();
             for (int j=0; j<y.size(); j++) {
-                paths[i].y[j] = -sin(-syaw) * x[j] +
-                                cos(-syaw) * y[j] + sy;
+//                paths[i].y[j] = -sin(-syaw) * x[j] +
+//                                cos(-syaw) * y[j] + sy;
+                paths[i].y.push_back(-sin(-syaw) * x[j] +
+                                     cos(-syaw) * y[j] + sy);
             }
 
-            paths[i].yaw.resize(y.size());
+//            paths[i].yaw.resize(y.size());
+            paths[i].yaw.clear();
             for (int j=0; j<yaw.size(); j++) {
-                paths[i].yaw[j] = pi2pi(yaw[j] + syaw);
+//                paths[i].yaw[j] = pi2pi(yaw[j] + syaw);
+                paths[i].yaw.push_back(pi2pi(yaw[j] + syaw));
             }
 
             paths[i].directions = directions;
@@ -125,12 +134,15 @@ namespace cpp_robotics
                                              vector<double>& pyaw,
                                              vector<double>& directions) {
         vector<double> l_lengths = {lengths.t, lengths.u, lengths.v};
-        int npoint = int((l / step_size) + l_lengths.size()) + 4; // FIXME
+        int npoint = int(trunc(l / step_size) + l_lengths.size()) + 4; // FIXME
+        std::cout << std::endl;
+        std::cout << "npoint:" << npoint << std::endl;
 
-        px.resize(npoint);
-        py.resize(npoint);
-        pyaw.resize(npoint);
-        directions.resize(npoint);
+        px.resize(npoint, 0);
+        std::cout << "px.resize:" << px.size() <<std::endl;
+        py.resize(npoint, 0);
+        pyaw.resize(npoint, 0);
+        directions.resize(npoint, 0);
         int ind = 1;
 
         if (l_lengths[0] > 0.0) {
@@ -188,12 +200,14 @@ namespace cpp_robotics
         }
 
         // remove unused data
-        while (px.back() == 0.0) {
+        std::cout << "befor pop size:" << px.size() <<std::endl;
+        while (fabs(px.back()) < 0.00001 && px.size() > 0) {
             px.pop_back();
             py.pop_back();
             pyaw.pop_back();
             directions.pop_back();
         }
+        std::cout << "after pop size:" << px.size() <<std::endl;
     }
 
     vector<Path> ReedsSheppPath::generatePath(double sx, double sy, double syaw,
@@ -208,7 +222,7 @@ namespace cpp_robotics
         double y = (-s * dx + c * dy) * maxc;
 
         vector<Path> paths;
-        SCS(x, y, dth, paths);
+//        SCS(x, y, dth, paths);
         CSC(x, y, dth, paths);
         CCC(x, y, dth, paths);
 

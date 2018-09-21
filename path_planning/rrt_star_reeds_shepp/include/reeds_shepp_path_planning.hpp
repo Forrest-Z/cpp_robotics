@@ -128,6 +128,7 @@ namespace cpp_robotics {
                 if (v > M_PI) { v -= 2.0*M_PI; }
             }
             return v;
+            // return x - 2.0 * M_PI * floor(x / 2.0 / M_PI);
         }
 
         inline double pi2pi(double angle) {
