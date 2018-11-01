@@ -3,7 +3,9 @@ project(rrt_star_dubins)
 
 set(CMAKE_CXX_STANDARD 11)
 
-if (NOT (EXISTS "FindOpenCV.cmake"))
+if (EXISTS "FindOpenCV.cmake")
+    message("find systerm opencv fail, use local.")
+else (EXISTS "FindOpenCV.cmake")
     set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1)
 endif (EXISTS "FindOpenCV.cmake")
 
