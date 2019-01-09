@@ -134,7 +134,7 @@ namespace cpp_robotics
                                              vector<double>& pyaw,
                                              vector<double>& directions) {
         vector<double> l_lengths = {lengths.t, lengths.u, lengths.v};
-        int npoint = int(trunc(l / step_size) + l_lengths.size()) + 4; // FIXME
+        unsigned int npoint = (unsigned int)(trunc(l / step_size) + l_lengths.size()) + 4; // FIXME
         std::cout << std::endl;
         std::cout << "npoint:" << npoint << std::endl;
 
@@ -222,7 +222,7 @@ namespace cpp_robotics
         double y = (-s * dx + c * dy) * maxc;
 
         vector<Path> paths;
-//        SCS(x, y, dth, paths);
+        SCS(x, y, dth, paths);
         CSC(x, y, dth, paths);
         CCC(x, y, dth, paths);
 

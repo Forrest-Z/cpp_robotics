@@ -3,6 +3,7 @@
 
 #include "closed_loop_rrt_star.hpp"
 
+using std::vector;
 using cpp_robotics::closed_loop_rrt_star::ObstacleListType;
 using cpp_robotics::closed_loop_rrt_star::ObstacleType;
 using cpp_robotics::closed_loop_rrt_star::ClosedLoopRRTStar;
@@ -15,17 +16,17 @@ int main() {
     ObstacleListType obstacleList;
     obstacleList.emplace_back(ObstacleType(5,5,1));
     obstacleList.emplace_back(ObstacleType(4,6,1));
+    obstacleList.emplace_back(ObstacleType(4,7,1));
     obstacleList.emplace_back(ObstacleType(4,8,1));
-    obstacleList.emplace_back(ObstacleType(4,10,1));
     obstacleList.emplace_back(ObstacleType(6,5,1));
     obstacleList.emplace_back(ObstacleType(7,5,1));
     obstacleList.emplace_back(ObstacleType(8,6,1));
+    obstacleList.emplace_back(ObstacleType(8,7,1));
     obstacleList.emplace_back(ObstacleType(8,8,1));
-    obstacleList.emplace_back(ObstacleType(8,10,1));
 
     double start[3] = {1,1,0};
     double goal[3] = {6,7,90*M_PI/180.0};
-    double randArea[2] = {0,20};
+    double randArea[2] = {0,14};
 
     ClosedLoopRRTStar cl_rrt_star(start, goal, randArea, obstacleList);
     vector<double> x;
@@ -39,6 +40,9 @@ int main() {
     cl_rrt_star.planning(true,
                          x, y, yaw, v,
                          t, a, d, flag);
+    if (!flag) {
+        std::cout << "cannot find feasible path." << std::endl;
+    }
 
     return 0;
 }

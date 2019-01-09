@@ -9,6 +9,10 @@
 #include <limits>
 #include <algorithm>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 namespace cpp_robotics {
 namespace closed_loop_rrt_star {
 
@@ -32,8 +36,10 @@ void ClosedLoopRRTStar::planning(bool show_animation,
         auto nind = getNearestListIndex(node_list_, rnd);
 
         auto new_node = steer(rnd, nind);
-        if (new_node.parent == -1) {
-            continue;
+        if (use_rsp) {
+            if (new_node.parent == -1) {
+                continue;
+            }
         }
 
         if (collisionCheck(new_node, obstacle_list_)) {
@@ -50,13 +56,12 @@ void ClosedLoopRRTStar::planning(bool show_animation,
         }
 
         if (show_animation && (i % 5 == 0)) {
-            // DrawGraph(rnd=rnd)
+            drawGraph(rnd);
         }
     }
 
     // generate coruse
     auto path_indexs = getBestLastIndexs();
-
     searchBestFeasiblePath(path_indexs, x, y, yaw, v, t, a, d, flag);
 }
 
@@ -129,16 +134,12 @@ void ClosedLoopRRTStar::checkTrackingPathIsFeasible(const NodeListType& path,
                                                     vector<double>& d,
                                                     bool& find_goal) {
     vector<double> cx;
-    for (auto i : path) {
-        cx.emplace_back(i.x);
-    }
     vector<double> cy;
-    for (auto i : path) {
-        cx.emplace_back(i.y);
-    }
     vector<double> cyaw;
     for (auto i : path) {
-        cx.emplace_back(i.yaw);
+        cx.emplace_back(i.x);
+        cy.emplace_back(i.y);
+        cyaw.emplace_back(i.yaw);
     }
 
     double goal[3] = {cx.back(), cy.back(), cyaw.back()};
@@ -234,8 +235,10 @@ std::vector<int> ClosedLoopRRTStar::getBestLastIndexs() {
 void ClosedLoopRRTStar::tryGoalPath() {
     auto goal = end_;
     auto new_node = steer(goal, (node_list_.size() - 1));
-    if (new_node.parent == -1) {
-        return;
+    if (use_rsp) {
+        if (new_node.parent == -1) {
+            return;
+        }
     }
     if (collisionCheck(new_node, obstacle_list_)) {
         node_list_.emplace_back(new_node);
@@ -245,14 +248,17 @@ void ClosedLoopRRTStar::tryGoalPath() {
 Node ClosedLoopRRTStar::chooseParent(const Node& new_node,
                                      const std::vector<int>& nearinds) {
     if (nearinds.empty()) {
-        return new_node;
+        Node temp_node = new_node;
+        return temp_node;
     }
 
     vector<double> dlist;
     for (auto i : nearinds) {
         auto t_node = steer(new_node, i);
-        if (t_node.parent == -1) {
-            continue;
+        if (use_rsp) {
+            if (t_node.parent == -1) {
+                continue;
+            }
         }
 
         if (collisionCheck(t_node, obstacle_list_)) {
@@ -276,12 +282,15 @@ Node ClosedLoopRRTStar::chooseParent(const Node& new_node,
 
     if (mincost >= std::numeric_limits<double>::infinity()) {
         std::cout << "mincost is inf" << std::endl;
-        return new_node;
+        Node temp_node = new_node;
+        return temp_node;
     }
 
     auto out_node = steer(new_node, minind);
-    if (out_node.parent == -1) {
-        return Node();
+    if (use_rsp) {
+        if (out_node.parent == -1) {
+            return Node();
+        }
     }
 
     return out_node;
@@ -293,9 +302,10 @@ void ClosedLoopRRTStar::rewire(const Node& new_node,
     for (auto i : nearinds) {
         Node near_node = node_list_[i];
         auto tNode = steer(near_node, nnode - 1);
-
-        if (tNode.parent == -1) {
-            continue;
+        if (use_rsp) {
+            if (tNode.parent == -1) {
+                continue;
+            }
         }
 
         auto obstacleOK = collisionCheck(tNode, obstacle_list_);
@@ -309,26 +319,55 @@ Node ClosedLoopRRTStar::steer(const Node& rnd, int nind) {
     // expand tree
     auto nearest_node = node_list_[nind];
 
-    auto path = rsp_.reedsSheppPathPlanning(nearest_node.x, nearest_node.y, nearest_node.yaw,
-                                            rnd.x, rnd.y, rnd.yaw,
-                                            um_.get_curvature_max(), step_size_);
-    if (path.x.empty()) {
-        return Node();
+    if (use_rsp) {
+        auto path = rsp_.reedsSheppPathPlanning(nearest_node.x, nearest_node.y, nearest_node.yaw,
+                                                rnd.x, rnd.y, rnd.yaw,
+                                                um_.get_curvature_max(), step_size_);
+        if (path.x.empty()) {
+            return Node();
+        }
+
+        Node new_node = nearest_node;
+        new_node.x = path.x.back();
+        new_node.y = path.y.back();
+        new_node.yaw = path.yaw.back();
+
+        new_node.path_x = path.x;
+        new_node.path_y = path.y;
+        new_node.path_yaw = path.yaw;
+
+        new_node.cost += (fabs(path.lengths.t) + fabs(path.lengths.u) + fabs(path.lengths.v));
+        new_node.parent = nind;
+
+        return new_node;
     }
+    else {
+        std::vector<double> px;
+        std::vector<double> py;
+        std::vector<double> pyaw;
+        cpp_robotics::dubins_curves::Mode mode;
+        double cost;
+        double curvature = um_.get_curvature_max();
+        dp_.dubinsPathPlanning(nearest_node.x, nearest_node.y, nearest_node.yaw,
+                               rnd.x, rnd.y, rnd.yaw,
+                               curvature,
+                               px, py, pyaw,
+                               mode, cost);
 
-    Node new_node = nearest_node;
-    new_node.x = path.x.back();
-    new_node.y = path.y.back();
-    new_node.yaw = path.yaw.back();
+        Node new_node = nearest_node;
+        new_node.x = px.back();
+        new_node.y = py.back();
+        new_node.yaw = pyaw.back();
 
-    new_node.path_x = path.x;
-    new_node.path_y = path.y;
-    new_node.path_yaw = path.yaw;
+        new_node.path_x = px;
+        new_node.path_y = py;
+        new_node.path_yaw = pyaw;
 
-    new_node.cost += (fabs(path.lengths.t) + fabs(path.lengths.u) + fabs(path.lengths.v));
-    new_node.parent = nind;
+        new_node.cost += cost;
+        new_node.parent = nind;
 
-    return new_node;
+        return new_node;
+    }
 }
 
 bool ClosedLoopRRTStar::collisionCheck(const Node& node,
@@ -400,6 +439,65 @@ Node ClosedLoopRRTStar::getRandomPoint() {
     rnd.y = fmod(double(rand()),(max_rand_ - min_rand_ + 1)) + min_rand_;
     rnd.yaw = fmod(double(rand()),(M_PI - (-M_PI) + 1)) + (-M_PI);
     return rnd;
+}
+
+void ClosedLoopRRTStar::drawGraph(const Node& rnd) {
+    int cols = (max_rand_ - min_rand_) / map_resolution_;
+    int rows = (max_rand_ - min_rand_) / map_resolution_;
+    cv::Mat display_img(rows, cols, CV_8UC3, cv::Scalar(255,255,255));
+
+    // draw obstacles
+    for(int i=0; i< obstacle_list_.size(); i++)
+    {
+        cv::circle(display_img,
+                   cv::Point(obstacle_list_[i].x / map_resolution_,
+                             rows - obstacle_list_[i].y / map_resolution_),
+                   obstacle_list_[i].size  / map_resolution_,
+                   cv::Scalar(0,0,0),-1);
+    }
+
+    // draw tree
+    for(int i=1; i< node_list_.size(); i++)
+    {
+        if (node_list_[i].parent != -1) {
+            for(int j=0; j<(node_list_[i].path_x.size()-1); j++)
+            {
+//                cv::circle(display_img,
+//                           cv::Point(node_list_[i].path_x[j] / map_resolution_,
+//                                     rows - node_list_[i].path_y[j] / map_resolution_),
+//                           1, cv::Scalar(255,255,0), -1);
+                cv::line(display_img,
+                         cv::Point(node_list_[i].path_x[j] / map_resolution_,
+                                   rows - node_list_[i].path_y[j] / map_resolution_),
+                         cv::Point(node_list_[i].path_x[j+1] / map_resolution_,
+                                   rows - node_list_[i].path_y[j+1] / map_resolution_),
+                         cv::Scalar(255,255,0));
+            }
+        }
+    }
+
+    // draw random node
+    cv::circle(display_img,
+               cv::Point(rnd.x / map_resolution_,
+                         rows - rnd.y / map_resolution_),
+               3,cv::Scalar(255,0,0),-1);
+
+    // draw start node
+    cv::circle(display_img,
+               cv::Point(start_.x / map_resolution_,
+                         rows - start_.y / map_resolution_),
+               3,cv::Scalar(0,255,0),-1);
+
+    // draw end node
+    cv::circle(display_img,
+               cv::Point(end_.x / map_resolution_,
+                         rows - end_.y / map_resolution_),
+               3,
+               cv::Scalar(0,0,255),1);
+
+    cv::namedWindow("display_img",0);
+    cv::imshow("display_img",display_img);
+    cv::waitKey(10);
 }
 
 } // namespace closed_loop_rrt_star

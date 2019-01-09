@@ -70,8 +70,8 @@ private:
 
     double dt_ = 0.05;   // [s]
     double l_ = 0.9;     // [m]
-    double steer_max_ = 40.0 * M_PI * 180.0;
-    double curvature_max_ = 1.0 / (tan(steer_max_) / l_) + 1.0;
+    double steer_max_ = (40.0 * M_PI / 180.0);
+    double curvature_max_ = (1.0 / (tan(steer_max_) / l_) + 1.0);
     double accel_max_ = 5.0;
 };
 

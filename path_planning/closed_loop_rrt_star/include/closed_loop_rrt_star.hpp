@@ -9,9 +9,10 @@
 #include <math.h>
 #include <complex>
 
-#include "reeds_shepp_path_planning.hpp"
 #include "pure_pursuit.hpp"
 #include "unicycle_model.hpp"
+#include "reeds_shepp_path_planning.hpp"
+#include "dubins_path_planning.hpp"
 
 namespace cpp_robotics {
 namespace closed_loop_rrt_star {
@@ -79,6 +80,8 @@ public:
                   vector<double>& d,
                   bool& flag);
 
+    void drawPath(const NodeListType& path);
+
 private:
 
     void searchBestFeasiblePath(const std::vector<int>& path_indexs,
@@ -128,7 +131,7 @@ private:
         return fmod((angle + M_PI), (2 * M_PI)) - M_PI;
     }
 
-    void drawGraph();
+    void drawGraph(const Node& rnd);
 
     Node start_;
     Node end_;
@@ -139,12 +142,17 @@ private:
 
     NodeListType node_list_;
 
+    bool use_rsp = false; // true - rsp, false - dp
     ReedsSheppPath rsp_;
+    dubins_curves::DubinsPath dp_;
+
     unicycle_model::UnicycleModel um_;
     double step_size_ = 0.1;
     pure_pursuit::PurePursuit pp_;
 
     double target_speed_ = 10.0 / 3.6;
+
+    double map_resolution_ = 0.05;
 };
 
 } // namespace closed_loop_rrt_star
