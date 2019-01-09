@@ -2,6 +2,10 @@
 Changelog for package reeds_shepp_path
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2018-11-02)
+------------------
+* change some code, SLS still have bug
+
 0.0.3 (2018-09-21)
 ------------------
 * find SLS bug, so remove SLS

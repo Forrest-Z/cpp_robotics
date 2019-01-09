@@ -125,7 +125,7 @@ namespace cpp_robotics
                                              vector<double>& pyaw,
                                              vector<double>& directions) {
         vector<double> l_lengths = {lengths.t, lengths.u, lengths.v};
-        int npoint = int((l / step_size) + l_lengths.size()) + 4; // FIXME
+        unsigned int npoint = (unsigned int)((l / step_size) + l_lengths.size()) + 4; // FIXME
 
         px.resize(npoint);
         py.resize(npoint);
@@ -208,7 +208,7 @@ namespace cpp_robotics
         double y = (-s * dx + c * dy) * maxc;
 
         vector<Path> paths;
-//        SCS(x, y, dth, paths); // have bug
+        SCS(x, y, dth, paths); // have bug
         CSC(x, y, dth, paths);
         CCC(x, y, dth, paths);
 
@@ -391,9 +391,10 @@ namespace cpp_robotics
         path.ctypes = ctypes;
 
         // check same path exist
-        for (int i=0; i<paths.size(); i++) {
-            if (paths[i].ctypes == path.ctypes) {
-                double sun_err = lengthsSum(paths[i].lengths) -
+        for (auto tpath : paths) {
+            bool typeissame = (tpath.ctypes == path.ctypes);
+            if (typeissame) {
+                double sun_err = lengthsSum(tpath.lengths) -
                                  lengthsSum(path.lengths);
                 if (sun_err <= 0.01) {
                     return;
@@ -405,7 +406,7 @@ namespace cpp_robotics
 
         // Base.Test.@test path.L >= 0.01
         if (path.l >= 0.01) {
-            paths.push_back(path);
+            paths.emplace_back(path);
         }
     }
 
@@ -456,14 +457,14 @@ namespace cpp_robotics
 
     State ReedsSheppPath::SLS(double x, double y, double phi) {
         double l_phi = mod2pi(phi);
-        if (y > 0.0 && l_phi > 0.0 && l_phi < M_PI) {
+        if (y > 0.0 && l_phi > 0.0 && l_phi < (M_PI*0.99)) {
             double xd = -y / tan(l_phi) + x; // FIXME
             double t = xd - tan(l_phi / 2.0);
             double u = l_phi;
             double v = sqrt(pow(x - xd, 2) + pow(y, 2)) - tan(l_phi / 2.0);
             return State(true, Lengths(t, u, v));
         }
-        else if (y < 0.0 && l_phi > 0.0 && l_phi < M_PI) {
+        else if (y < 0.0 && l_phi > 0.0 && l_phi < (M_PI*0.99)) {
             double xd = -y / tan(l_phi) + x;
             double t = xd - tan(l_phi / 2.0);
             double u = l_phi;
