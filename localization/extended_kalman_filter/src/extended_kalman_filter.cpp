@@ -47,10 +47,10 @@ namespace cpp_robotics {
         double time = 0.0;
 
         // State Vector [x y yaw v]'
-        MatrixXd xEst = MatrixXd::Zero(4, 1);
-        MatrixXd xTrue = MatrixXd::Zero(4, 1);
-        MatrixXd PEst = MatrixXd::Identity(4, 4);
-        MatrixXd xDR = MatrixXd::Zero(4, 1);  // Dead reckoning
+        MatrixXd xEst = MatrixXd::Zero(4, 1);       // 估计状态矩阵
+        MatrixXd xTrue = MatrixXd::Zero(4, 1);      // 真实状态矩阵
+        MatrixXd PEst = MatrixXd::Identity(4, 4);   // 状态协方差矩阵
+        MatrixXd xDR = MatrixXd::Zero(4, 1);        // Dead reckoning
 
         // history
         std::vector<MatrixXd> hxEst;
@@ -64,9 +64,10 @@ namespace cpp_robotics {
 
         while (SIM_TIME >= time) {
             time += DT;
-            MatrixXd u = calcInput();
+            MatrixXd u = calcInput();   // 控制速度u [v, w]
 
-            MatrixXd z, ud;
+            MatrixXd z;     // gps位置[x, y]
+            MatrixXd ud;    // 带噪声u
             observation(u, xTrue, z, xDR, ud);
 
             ekfEstimation(z, u, xEst, PEst);
@@ -265,6 +266,7 @@ namespace cpp_robotics {
                 0.0, DT,
                 1.0, 0.0;
 
+        // motion model
         MatrixXd l_x = F * x + B * u;
 
         return l_x;

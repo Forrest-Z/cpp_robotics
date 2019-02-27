@@ -81,8 +81,8 @@ namespace cpp_robotics {
         MatrixXd motionModel(const MatrixXd& x, const MatrixXd& u);
 
         /**
-         * @brief   get robot ctrl speed(v,w) input
-         * @return  MatrixXd(2, 1) - robot ctrl speed
+         * @brief   get u use robot ctrl speed(v,w) input
+         * @return  MatrixXd(2, 1) - u
          */
         MatrixXd calcInput();
 
@@ -99,8 +99,8 @@ namespace cpp_robotics {
         }
 
         // Estimation parameter of EKF
-        MatrixXd Q_;
-        MatrixXd R_;
+        MatrixXd Q_;    // 过程噪声协方差矩阵
+        MatrixXd R_;    // 观测噪声协方差矩阵
 
         // Simulation parameter
         MatrixXd Qsim_;
