@@ -2,6 +2,10 @@
 Changelog for package unscented_kalman_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.1 (2019-03-01)
+------------------
+* finish first version
+
 0.0.0 (2018-09-08)
 ------------------
 * start coding
