@@ -11,6 +11,7 @@
 #include "Eigen/Dense"
 
 using Eigen::MatrixXd;
+using std::vector;
 
 namespace cpp_robotics {
 
@@ -22,9 +23,8 @@ namespace cpp_robotics {
 
         void test();
 
-    private:
-
-        void plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst);
+        MatrixXd calculateRMSE(const vector<MatrixXd> &estimations,
+                               const vector<MatrixXd> &ground_truth);
 
         /**
          * @brief   ekf etimation
@@ -35,6 +35,10 @@ namespace cpp_robotics {
          */
         void ekfEstimation(const MatrixXd& z, const MatrixXd& u,
                            MatrixXd& xEst, MatrixXd& PEst);
+
+    private:
+
+        void plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst);
 
         /**
          * @brief   Jacobian of Observation Model
