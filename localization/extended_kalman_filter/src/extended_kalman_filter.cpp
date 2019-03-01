@@ -69,7 +69,7 @@ namespace cpp_robotics {
             MatrixXd z, ud;
             observation(u, xTrue, z, xDR, ud);
 
-            ekfEstimation(z, u, xEst, PEst);
+            ekfEstimation(z, ud, xEst, PEst);
 
             // store data history
             hxEst.push_back(xEst);

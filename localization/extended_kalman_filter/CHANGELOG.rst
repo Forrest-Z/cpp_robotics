@@ -2,6 +2,10 @@
 Changelog for package extended_kalman_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2013-03-01)
+------------------
+* fix some bug
+
 0.0.2 (2018-09-08)
 ------------------
 * add display
