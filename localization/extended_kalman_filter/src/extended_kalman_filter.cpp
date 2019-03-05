@@ -21,22 +21,22 @@ namespace cpp_robotics {
         srand((unsigned)time(NULL));
 
         Q_ = MatrixXd(4, 4);
-        Q_ <<   0.1, 0, 0, 0,
-                0, 0.1, 0, 0,
-                0, 0, 1.0*M_PI/180.0, 0,
-                0, 0, 0, 1.0;
+        Q_ <<   pow(0.1, 2), 0, 0, 0,
+                0, pow(0.1, 2), 0, 0,
+                0, 0, pow(1.0*M_PI/180.0, 2), 0,
+                0, 0, 0, pow(1.0, 2);
 
         R_ = MatrixXd(2, 2);
-        R_ <<   1.0, 0,
-                0, 40.0*M_PI/180.0;
+        R_ <<   pow(1.0, 2), 0,
+                0, pow(40.0*M_PI/180.0, 2);
 
         Qsim_ = MatrixXd(2, 2);
-        Qsim_ <<    0.5, 0,
-                    0, 0.5;
+        Qsim_ <<    pow(0.5, 2), 0,
+                    0, pow(0.5, 2);
 
         Rsim_ = MatrixXd(2, 2);
-        Rsim_ <<    1.0, 0,
-                    0, 30.0*M_PI/180.0;
+        Rsim_ <<    pow(1.0, 2), 0,
+                    0, pow(30.0*M_PI/180.0, 2);
     }
 
     EKF::~EKF() {}
