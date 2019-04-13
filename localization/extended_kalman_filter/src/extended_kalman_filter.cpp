@@ -28,15 +28,15 @@ namespace cpp_robotics {
 
         R_ = MatrixXd(2, 2);
         R_ <<   pow(1.0, 2), 0,
-                0, pow(40.0*M_PI/180.0, 2);
+                0, pow(1.0, 2);
 
         Qsim_ = MatrixXd(2, 2);
-        Qsim_ <<    pow(0.5, 2), 0,
-                    0, pow(0.5, 2);
+        Qsim_ <<    pow(1.0, 2), 0,
+                    0, pow(30.0*M_PI/180.0, 2);
 
         Rsim_ = MatrixXd(2, 2);
-        Rsim_ <<    pow(1.0, 2), 0,
-                    0, pow(30.0*M_PI/180.0, 2);
+        Rsim_ <<    pow(0.5, 2), 0,
+                    0, pow(0.5, 2);
     }
 
     EKF::~EKF() {}
@@ -276,14 +276,14 @@ namespace cpp_robotics {
         xTrue = motionModel(xTrue, u);
 
         // add noise to gps x-y
-        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0);
-        double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
+        double zx = xTrue(0, 0) + randn() * Rsim_(0, 0);
+        double zy = xTrue(1, 0) + randn() * Rsim_(1, 1);
         z.resize(1, 2);
         z << zx, zy;
 
         // add noise to input
-        double ud1 = u(0, 0) + randn() * Rsim_(0, 0);
-        double ud2 = u(1, 0) + randn() * Rsim_(1, 1);
+        double ud1 = u(0, 0) + randn() * Qsim_(0, 0);
+        double ud2 = u(1, 0) + randn() * Qsim_(1, 1);
         ud.resize(2, 1);
         ud << ud1, ud2;
 
