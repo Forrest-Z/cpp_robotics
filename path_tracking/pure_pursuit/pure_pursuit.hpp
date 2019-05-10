@@ -194,7 +194,7 @@ namespace pure_pursuit {
     };
 
 } // namespace pure_pursuit
-} // namespace cpp_robotics
+} // namespace path_tracking
 } // namespace cpp_robotics
 
 #endif //PURE_PURSUIT_PURE_PURSUIT_HPP
