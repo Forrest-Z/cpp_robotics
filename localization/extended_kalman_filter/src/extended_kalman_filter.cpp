@@ -21,22 +21,22 @@ namespace cpp_robotics {
         srand((unsigned)time(NULL));
 
         Q_ = MatrixXd(4, 4);
-        Q_ <<   0.1, 0, 0, 0,
-                0, 0.1, 0, 0,
-                0, 0, 1.0*M_PI/180.0, 0,
-                0, 0, 0, 1.0;
+        Q_ <<   pow(0.1, 2), 0, 0, 0,
+                0, pow(0.1, 2), 0, 0,
+                0, 0, pow(1.0*M_PI/180.0, 2), 0,
+                0, 0, 0, pow(1.0, 2);
 
         R_ = MatrixXd(2, 2);
-        R_ <<   1.0, 0,
-                0, 40.0*M_PI/180.0;
+        R_ <<   pow(1.0, 2), 0,
+                0, pow(1.0, 2);
 
         Qsim_ = MatrixXd(2, 2);
-        Qsim_ <<    0.5, 0,
-                    0, 0.5;
+        Qsim_ <<    pow(1.0, 2), 0,
+                    0, pow(30.0*M_PI/180.0, 2);
 
         Rsim_ = MatrixXd(2, 2);
-        Rsim_ <<    1.0, 0,
-                    0, 30.0*M_PI/180.0;
+        Rsim_ <<    pow(0.5, 2), 0,
+                    0, pow(0.5, 2);
     }
 
     EKF::~EKF() {}
@@ -70,7 +70,7 @@ namespace cpp_robotics {
             MatrixXd ud;    // 带噪声u
             observation(u, xTrue, z, xDR, ud);
 
-            ekfEstimation(z, u, xEst, PEst);
+            ekfEstimation(z, ud, xEst, PEst);
 
             // store data history
             hxEst.push_back(xEst);
@@ -117,7 +117,46 @@ namespace cpp_robotics {
             }
         }
 
+        std::cout << "RMSE: \n" << calculateRMSE(hxEst, hxTrue) << std::endl;
         std::cout << "Extended_kalman_filter finish." << std::endl;
+    }
+
+    MatrixXd EKF::calculateRMSE(const vector<MatrixXd> &estimations,
+                                const vector<MatrixXd> &ground_truth) {
+        /**
+           Calculate the RMSE.
+        */
+
+        MatrixXd rmse(4,1);
+        rmse << 0,0,0,0;
+
+        // check the validity of the following inputs:
+        //  * the estimation vector size should not be zero
+        //  * the estimation vector size should equal ground truth vector size
+        if(estimations.size() != ground_truth.size()
+           || estimations.size() == 0){
+            std::cout << "Invalid estimation or ground_truth data" << std::endl;
+            return rmse;
+        }
+
+        //accumulate squared residuals
+        for(unsigned int i=0; i < estimations.size(); ++i){
+
+            MatrixXd residual = estimations[i] - ground_truth[i];
+
+            //coefficient-wise multiplication
+            residual = residual.array()*residual.array();
+            rmse += residual;
+        }
+
+        //calculate the mean
+        rmse = rmse/estimations.size();
+
+        //calculate the squared root
+        rmse = rmse.array().sqrt();
+
+        //return the result
+        return rmse;
     }
 
     void EKF::plotCovarianceEllipse(const MatrixXd& xEst, const MatrixXd& PEst) {
@@ -238,14 +277,14 @@ namespace cpp_robotics {
         xTrue = motionModel(xTrue, u);
 
         // add noise to gps x-y
-        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0);
-        double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
+        double zx = xTrue(0, 0) + randn() * Rsim_(0, 0);
+        double zy = xTrue(1, 0) + randn() * Rsim_(1, 1);
         z.resize(1, 2);
         z << zx, zy;
 
         // add noise to input
-        double ud1 = u(0, 0) + randn() * Rsim_(0, 0);
-        double ud2 = u(1, 0) + randn() * Rsim_(1, 1);
+        double ud1 = u(0, 0) + randn() * Qsim_(0, 0);
+        double ud2 = u(1, 0) + randn() * Qsim_(1, 1);
         ud.resize(2, 1);
         ud << ud1, ud2;
 

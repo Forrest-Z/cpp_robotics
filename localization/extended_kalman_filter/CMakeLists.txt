@@ -3,8 +3,8 @@ project(extended_kalman_filter)
 
 set(CMAKE_CXX_STANDARD 11)
 
-#set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1-dev)
-#find_package(OpenCV REQUIRED)
+set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1-dev)
+find_package(OpenCV REQUIRED)
 find_package(PythonLibs 2.7)
 
 include_directories(
