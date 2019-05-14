@@ -123,6 +123,8 @@ namespace cpp_robotics {
         void plotCovarianceEllipse(const MatrixXd& xEst,
                                    const MatrixXd& PEst);
 
+        void plotArrow(const MatrixXd& xEst, std::string color = "-k", double length = 0.5);
+
         inline double randu() {
             return (double) rand()/RAND_MAX;
         }

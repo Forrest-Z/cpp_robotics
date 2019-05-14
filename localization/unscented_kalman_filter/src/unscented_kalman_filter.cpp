@@ -30,12 +30,12 @@ namespace cpp_robotics {
                 0, pow(40.0*M_PI/180.0, 2);
 
         Qsim_ = MatrixXd(2, 2);
-        Qsim_ << pow(0.5, 2), 0,
-                 0, pow(0.5, 2);
+        Qsim_ << pow(1.0, 2), 0,
+                 0, pow(30.0*M_PI/180.0, 2);
 
         Rsim_ = MatrixXd(2, 2);
-        Rsim_ << pow(1.0, 2), 0,
-                 0, pow(30.0*M_PI/180.0, 2);
+        Rsim_ << pow(0.5, 2), 0,
+                 0, pow(0.5, 2);
     }
 
     UKF::~UKF() {}
@@ -96,6 +96,7 @@ namespace cpp_robotics {
                     Py_hxTrue.push_back(hxTrue[i](1, 0));
                 }
                 matplotlibcpp::plot(Px_hxTrue, Py_hxTrue, "-b");
+                plotArrow(xTrue);
 
                 std::vector<float> Px_hxDR, Py_hxDR;
                 for (int i = 0; i < hxDR.size(); i++) {
@@ -103,6 +104,7 @@ namespace cpp_robotics {
                     Py_hxDR.push_back(hxDR[i](1, 0));
                 }
                 matplotlibcpp::plot(Px_hxDR, Py_hxDR, "-k");
+                plotArrow(xDR);
 
                 std::vector<float> Px_hxEst, Py_hxEst;
                 for (int i = 0; i < hxEst.size(); i++) {
@@ -112,6 +114,8 @@ namespace cpp_robotics {
                 matplotlibcpp::plot(Px_hxEst, Py_hxEst, "-r");
 
                 plotCovarianceEllipse(xEst, PEst);
+
+                plotArrow(xEst);
 
                 matplotlibcpp::axis("equal");
                 matplotlibcpp::grid(true);
@@ -334,14 +338,14 @@ namespace cpp_robotics {
         xTrue = motionModel(xTrue, u);
 
         // add noise to gps x-y
-        double zx = xTrue(0, 0) + randn() * Qsim_(0, 0);
-        double zy = xTrue(1, 0) + randn() * Qsim_(1, 1);
+        double zx = xTrue(0, 0) + randn() * Rsim_(0, 0);
+        double zy = xTrue(1, 0) + randn() * Rsim_(1, 1);
         z.resize(1, 2);
         z << zx, zy;
 
         // add noise to input
-        double ud1 = u(0, 0) + randn() * Rsim_(0, 0);
-        double ud2 = u(1, 0) + randn() * Rsim_(1, 1);
+        double ud1 = u(0, 0) + randn() * Qsim_(0, 0);
+        double ud2 = u(1, 0) + randn() * Qsim_(1, 1);
         ud.resize(2, 1);
         ud << ud1, ud2;
 
@@ -400,5 +404,30 @@ namespace cpp_robotics {
             Py_fx.push_back(fx(1, i) + xEst(1, 0));
         }
         matplotlibcpp::plot(Px_fx, Py_fx, "--r");
+    }
+
+    void UKF::plotArrow(const MatrixXd& xEst, std::string color, double length) {
+        double end_x = xEst(0, 0) + length * cos(xEst(2, 0));
+        double end_y = xEst(1, 0) + length * sin(xEst(2, 0));
+        std::vector<float> Px_end, Py_end;
+        Px_end.emplace_back(xEst(0, 0));
+        Px_end.emplace_back(end_x);
+        Py_end.emplace_back(xEst(1, 0));
+        Py_end.emplace_back(end_y);
+        matplotlibcpp::plot(Px_end, Py_end, "-k");
+
+        double length2 = length / 3.0;
+        double end_l_x = end_x + length2 * cos(xEst(2, 0) + 135.0*M_PI/180.0);
+        double end_l_y = end_y + length2 * sin(xEst(2, 0) + 135.0*M_PI/180.0);
+        double end_r_x = end_x + length2 * cos(xEst(2, 0) - 135.0*M_PI/180.0);
+        double end_r_y = end_y + length2 * sin(xEst(2, 0) - 135.0*M_PI/180.0);
+        std::vector<float> Px_end_lr, Py_end_lr;
+        Px_end_lr.emplace_back(end_l_x);
+        Px_end_lr.emplace_back(end_x);
+        Px_end_lr.emplace_back(end_r_x);
+        Py_end_lr.emplace_back(end_l_y);
+        Py_end_lr.emplace_back(end_y);
+        Py_end_lr.emplace_back(end_r_y);
+        matplotlibcpp::plot(Px_end_lr, Py_end_lr, color);
     }
 }

@@ -2,6 +2,10 @@
 Changelog for package unscented_kalman_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2019-05-14)
+------------------
+* add plot arrow
+
 0.0.1 (2019-03-01)
 ------------------
 * finish first version
