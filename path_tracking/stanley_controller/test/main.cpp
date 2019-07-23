@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../stanley_controller.hpp"
+#include "stanley_controller.hpp"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
