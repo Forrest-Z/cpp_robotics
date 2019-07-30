@@ -67,8 +67,9 @@ namespace pure_pursuit {
             while (T >= time and lastIndex > target_ind) {
                 auto ai = PIDControl(target_speed, state.v);
                 float di = 0;
-                int target_ind = -1;
-                purePursuitControl(state, cx, cy, target_ind, di, target_ind);
+                int tind = -1;
+                purePursuitControl(state, cx, cy, target_ind, di, tind);
+                target_ind = tind;
                 state = update(state, ai, di);
 
                 time = time + dt_;
