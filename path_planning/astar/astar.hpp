@@ -25,7 +25,7 @@ namespace path_planning {
 namespace astar {
 
 using Coord = cv::Point;
-using Score = std::pair<int, Coord>;
+using Score = std::pair<int64_t, Coord>;
 using HeuristicFunction = std::function<int64_t(Coord, Coord)>;
 
 enum State {
