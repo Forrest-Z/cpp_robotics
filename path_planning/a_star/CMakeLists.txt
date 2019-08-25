@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(astar)
+project(a_star)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -10,7 +10,7 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(astar main.cpp astar.hpp)
-target_link_libraries(astar
+add_executable(a_star main.cpp a_star.hpp)
+target_link_libraries(a_star
         ${OpenCV_LIBRARIES}
 )

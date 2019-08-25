@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "astar.hpp"
+#include "a_star.hpp"
 
 using namespace cpp_robotics::path_planning;
 
@@ -14,8 +14,8 @@ int main() {
         return -1;
     }
 
-    //! astar
-    astar::Astar astar(astar::Heuristic::manhattan, true);
+    //! a_star
+    a_star::Astar astar(a_star::Heuristic::manhattan, true);
     astar.init(map_data);
     auto path = astar.findPath({25, 75}, {80, 10});
 

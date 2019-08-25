@@ -2,8 +2,8 @@
 // Created by forrest on 19-8-25.
 //
 
-#ifndef ASTAR_ASTAR_HPP
-#define ASTAR_ASTAR_HPP
+#ifndef A_STAR_A_STAR_HPP
+#define A_STAR_A_STAR_HPP
 
 #include <iostream>
 #include <array>
@@ -22,7 +22,7 @@
  */
 namespace cpp_robotics {
 namespace path_planning {
-namespace astar {
+namespace a_star {
 
 using Coord = cv::Point;
 using Score = std::pair<int64_t, Coord>;
@@ -98,7 +98,7 @@ public:
     }
 
     std::vector<Coord> findPath(Coord start, Coord end) {
-        //! reset bfs
+        //! reset
         reset();
 
         //! check start and end point legal
@@ -201,20 +201,20 @@ private:
             op.pop();
             display_img_.at<uchar>(coord.y, coord.x) = 192;
         }
-        cv::namedWindow("dijkstra", 0);
-        cv::imshow("dijkstra", display_img_);
+        cv::namedWindow("a_star", 0);
+        cv::imshow("a_star", display_img_);
         cv::waitKey(1);
     }
 
     void drawPath(const std::vector<Coord>& path) {
         for (auto coord : path) {
             display_img_.at<uchar>(coord.y, coord.x) = 64;
-            cv::namedWindow("dijkstra", 0);
-            cv::imshow("dijkstra", display_img_);
+            cv::namedWindow("a_star", 0);
+            cv::imshow("a_star", display_img_);
             cv::waitKey(10);
         }
-        cv::namedWindow("dijkstra", 0);
-        cv::imshow("dijkstra", display_img_);
+        cv::namedWindow("a_star", 0);
+        cv::imshow("a_star", display_img_);
         cv::waitKey(0);
     }
 
@@ -229,8 +229,8 @@ private:
     bool display_flag_ = false;
 };
 
-} // namespace astar
+} // namespace a_star
 } // namespace path_planning
 } // namespace cpp_robotics
 
-#endif //ASTAR_ASTAR_HPP
+#endif //A_STAR_A_STAR_HPP
