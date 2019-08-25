@@ -76,7 +76,7 @@ public:
     }
 
     std::vector<Coord> findPath(Coord start, Coord end) {
-        //! reset bfs
+        //! reset dijkstra
         reset();
 
         //! check start and end point legal
