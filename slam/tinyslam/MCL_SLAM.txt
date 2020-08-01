@@ -1,0 +1,334 @@
+#include <CoreSLAM.h>
+#include "CoreSLAM.h"
+///----------------------------------------------------------------------//变量声明
+#define TEST_FILENAME "../test_data/test_lab.dat"   //传感器数据文件
+#define TEST_SCAN_SIZE      682     //测试的激光束个数
+//#define TEST_MIN_DIST       20		//测试的激光最小测距距离，cm??
+#define TEST_ANGLE_MIN      -120	//测试的激光束最小度数
+#define TEST_ANGLE_MAX      +120	//测试的激光束最大度数
+#define TEST_OFFSET_LASER   145		//激光雷达距离机器人中心偏移量
+#define TEST_HOLE_WIDTH     600     //似然函数峰值??
+
+ts_map_t map;						//地图数据
+ts_map_t trajectory;				//轨迹数据
+ts_sensor_data_t2 sensor_data[600]; //传感器数据
+///----------------------------------------------------------------------//功能函数
+///建图:建出来的地图是和实际一样
+void draw_map(ts_map_t *map, ts_map_t *overlay, int width, int height)
+{
+	cv::Mat image(2048, 2048, CV_8UC3, cv::Scalar(255,255,255));
+
+    int y = (TS_MAP_SIZE - height) / 2;
+	for (int yp = 0; yp < height; y++, yp++)
+	{
+        int x = (TS_MAP_SIZE - width) / 2;
+		for (int xp = 0; xp < width; x++, xp++)
+		{
+			unsigned char *p = image.data + yp*width * 3 + xp * 3;
+			if (overlay->map[(TS_MAP_SIZE - 1 - y) * TS_MAP_SIZE + x] == 0)//显示轨迹??
+			{
+				p[0] = 0; p[1] = 0; p[2] = 255;
+			}
+			else if (overlay->map[(TS_MAP_SIZE - 1 - y) * TS_MAP_SIZE + x] == 254)//显示轨迹
+			{
+				p[0] = 0; p[1] = 0; p[2] = 255;
+                cv::circle(image,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
+			}
+			else//显示地图
+			{
+				p[0] = (map->map[(TS_MAP_SIZE - 1 - y) * TS_MAP_SIZE + x]) >> 8;
+				p[1] = (map->map[(TS_MAP_SIZE - 1 - y) * TS_MAP_SIZE + x]) >> 8;
+				p[2] = (map->map[(TS_MAP_SIZE - 1 - y) * TS_MAP_SIZE + x]) >> 8;
+			}
+		}
+	}
+	cv::imshow("tinyslam", image);
+	cv::waitKey(1);
+}
+///建图:建出来的地图是和实际Y轴相反
+void draw_map2(ts_map_t *map, ts_map_t *overlay, int width, int height)
+{
+	int x = 0, y = 0, xp, yp;
+	cv::Mat image(height, width, CV_8UC3);
+
+	for (yp = 0; yp < height; y++, yp++)
+	{
+		for (xp = 0; xp < width; x++, xp++)
+		{
+			unsigned char *p = image.data + yp*width * 3 + xp * 3;//获取像素点通道地址
+			if (overlay->map[yp * TS_MAP_SIZE + xp] == 0)//画黑点
+			{
+				p[0] = 0; p[1] = 0; p[2] = 0;//三通道都为0
+			}
+			else if (overlay->map[yp * TS_MAP_SIZE + xp] == 254)//画白点
+            {
+				p[0] = 0; p[1] = 0; p[2] = 255;//三通道都为255
+			}
+			else //画渐变点
+			{
+				p[0] = (map->map[yp * TS_MAP_SIZE + xp]) >> 8;
+				p[1] = (map->map[yp * TS_MAP_SIZE + xp]) >> 8;
+				p[2] = (map->map[yp * TS_MAP_SIZE + xp]) >> 8;
+			}
+		}
+	}
+	cv::imshow("tinyslam", image);
+	cv::waitKey(1);
+}
+///读取激光雷达数据
+int read_sensor_data(char *inputfile, ts_sensor_data_t2 *data)
+{
+	FILE *input;
+	int i, j;
+    int nb_sensor_data = 0;//传感器数据个数
+	int d[TS_SCAN_SIZE];//激光数据距离值
+	ts_scan_t *scan;
+	char *str, line[4000];
+	double angle_deg, angle_rad;
+
+	input = fopen(inputfile, "rt");
+	do
+	{
+		// Read the scan
+		str = fgets(line, 4000, input);
+		if (str == NULL) break;
+		str = strtok(str, " ");
+		sscanf(str, "%d", &data[nb_sensor_data].timestamp);	//获取激光数据时间戳
+		str = strtok(NULL, " ");
+		sscanf(str, "%d", &data[nb_sensor_data].q1);		//获取左轮编码器值
+		str = strtok(NULL, " ");
+		sscanf(str, "%d", &data[nb_sensor_data].q2);		//获取右轮编码器值
+		data[nb_sensor_data].q2 = -data[nb_sensor_data].q2;
+		for (i = 0; i < 10; i++)
+			str = strtok(NULL, " ");
+		for (i = 0; i < TEST_SCAN_SIZE; i++)
+		{
+			if (str)
+			{
+				sscanf(str, "%d", &d[i]);					//获取激光数据距离值
+				str = strtok(NULL, " ");
+			}
+			else d[i] = 0;
+		}
+
+		// Change to (x,y) scan
+		scan = &data[nb_sensor_data].scan;//获取激光数据地址
+		scan->nb_points = 0;				//初始化激光数据点数个数
+
+#define SPAN 3
+
+		// 遍历所有测试的激光数据
+		for (i = 0; i < TEST_SCAN_SIZE; i++)
+		{
+			for (j = 0; j != SPAN; j++) //每个激光束计算三个方向的值（相当于增大了角度分辨率）
+			{
+				//获取激光束的角度
+				angle_deg = TEST_ANGLE_MIN + ((double)(i * SPAN + j)) *
+											 (TEST_ANGLE_MAX - TEST_ANGLE_MIN) /
+											 (TEST_SCAN_SIZE * SPAN - 1);
+				angle_rad = angle_deg * M_PI / 180;//获取激光束的角度变弧度
+
+				//取中间数据，忽略首位数据影响
+				if (i > 45 && i < TEST_SCAN_SIZE - 45)
+				{
+					if (d[i] == 0)
+					{
+						scan->x[scan->nb_points] = TS_DISTANCE_NO_DETECTION * cos(angle_rad);
+						scan->y[scan->nb_points] = TS_DISTANCE_NO_DETECTION * sin(angle_rad);
+						scan->value[scan->nb_points] = TS_NO_OBSTACLE;
+						scan->x[scan->nb_points] += TEST_OFFSET_LASER;
+						scan->nb_points++;
+					}
+					if (d[i] > TEST_HOLE_WIDTH / 2)
+					{
+						scan->x[scan->nb_points] = d[i] * cos(angle_rad);
+						scan->y[scan->nb_points] = d[i] * sin(angle_rad);
+						scan->value[scan->nb_points] = TS_OBSTACLE;
+						scan->x[scan->nb_points] += TEST_OFFSET_LASER;
+						scan->nb_points++;
+					}
+				}
+			}
+		}
+		nb_sensor_data++;
+	} while (1);
+
+	fclose(input);
+	return nb_sensor_data;
+}
+
+void Calculate_odometry(int encoder[2], double* odom)
+{
+    static int left_enc_old,right_enc_old;//上一次编码值
+//    static double position[3] = {TS_MAP_SIZE / 2.0 * TS_MAP_SCALE / 100,
+//                                 TS_MAP_SIZE / 2.0 * TS_MAP_SCALE / 100,
+//                                 0};//机器人位姿(m,m,rad)
+    static double position[3];//机器人位姿(m,m,rad)
+    static double then;//上一刻时间.s
+
+    double wheel_diameter = 0.077*2;    //小车轮子的直径,m
+    double wheel_track= 0.165*2;        //两个轮子的轮间距,m
+    double gear_reduction = 1.0;        //减速比
+    int encoder_resolution = 2000;      //轮子转一圈编码器的计数
+
+    //每米有多少个编码器刻度,个/m
+    double ticks_per_meter = encoder_resolution * gear_reduction  / (wheel_diameter * M_PI);
+
+//    double now = 0;//当前时间,s
+//    double dt = now - then;//时间变化,s
+//    then = now;//上一刻时间.s
+
+    double dleft = (encoder[0] - left_enc_old) / ticks_per_meter;   // dt内左轮变化的路程,m
+    double dright = (encoder[1] - right_enc_old) / ticks_per_meter; // dt内右轮变化的路程,m
+
+    //记录编码器值
+    left_enc_old = encoder[0];
+    right_enc_old = encoder[1];
+
+    double dxy_ave = (dright + dleft) / 2.0;    // dt内变化的路程,m
+    double dth = (dright - dleft) / wheel_track;// dt内变化的角度,rad
+
+//    double vxy = dxy_ave / dt;  //线速度,m/s
+//    double vth = dth / dt;      //角速度,rad/s
+
+    double dx = cos(dth) * dxy_ave; // dt内变化的x偏移量,m
+    double dy = -sin(dth) * dxy_ave;// dt内变化的y偏移量,m
+
+//    double dx = cos(dth) * dxy_ave; // dt内变化的x偏移量,m
+//    double dy = sin(dth) * dxy_ave;// dt内变化的y偏移量,m
+
+    position[2] += dth;//rad
+    position[0] += (cos(position[2]) * dx - sin(position[2]) * dy);//m
+    position[1] += (sin(position[2]) * dx + cos(position[2]) * dy);//m
+//    position[0] += dx;//m
+//    position[1] += dy;//m
+
+
+    *(odom + 0) = position[0];  //m
+    *(odom + 1) = position[1];  //m
+    *(odom + 2) = position[2];  //rad
+//    *(odom + 3) = vxy;          //m/s
+//    *(odom + 4) = vth;          //rad/s
+}
+
+void Calculate_robot_pose(int encoder[2],double* robot_pose)
+{
+    static double robot_pose_old[3] = {TS_MAP_SIZE / 2.0 * TS_MAP_SCALE / 100,
+                                 TS_MAP_SIZE / 2.0 * TS_MAP_SCALE / 100,
+                                 0};//机器人位姿(m,m,rad)
+    static double odom_old[3];
+
+    double odom[3];
+    Calculate_odometry(encoder, odom);
+
+    double odom_delta[3];
+    odom_delta[0] = odom[0] - odom_old[0];
+    odom_delta[1] = odom[1] - odom_old[1];
+    odom_delta[2] = odom[2] - odom_old[2];
+
+    double s = sin(odom_old[2]);
+    double c = cos(odom_old[2]);
+
+    odom_old[0] = odom[0];
+    odom_old[1] = odom[1];
+    odom_old[2] = odom[2];
+
+    double odom_delta2[3];
+    odom_delta2[2] = atan2(sin(odom_delta[2]), cos(odom_delta[2]));
+    odom_delta2[0] = c*odom_delta[0] + s*odom_delta[1];
+    odom_delta2[1] = c*odom_delta[1] - s*odom_delta[0];
+
+    double ss = sin(robot_pose_old[2]);
+    double cc = cos(robot_pose_old[2]);
+
+    double robot_pose_new[3];
+    robot_pose_new[0] = robot_pose_old[0] + (cc*odom_delta2[0] - ss*odom_delta2[1]);//m
+    robot_pose_new[1] = robot_pose_old[1] + (ss*odom_delta2[0] + cc*odom_delta2[1]);//m
+    robot_pose_new[2] = robot_pose_old[2] + odom_delta2[2];//弧度
+
+    *(robot_pose+0) = robot_pose_new[0];
+    *(robot_pose+1) = robot_pose_new[1];
+    *(robot_pose+2) = robot_pose_new[2];
+}
+///----------------------------------------------------------------------//主函数
+int main()
+{
+	ts_position_t position;	            //机器人当前位姿
+    static ts_position_t position_old;	//机器人旧位姿
+    ts_robot_parameters_t params;       //机器人参数
+	int nb_sensor_data;			        //激光数据个数
+    int mapping_mode = 1;               //建图位姿更新方式：0-MCL,1-odom
+	///----------------------------------------------------------------------
+	/// init
+	cv::namedWindow("tinyslam", cv::WINDOW_NORMAL);
+	//机器人参数初始化
+	params.r = 0.077;   // m,
+	params.R = 0.165;   // m,
+	params.inc = 2000;  //
+	params.ratio = 1.0; //
+
+	//获取所有激光数据和激光数据个数
+	nb_sensor_data = read_sensor_data(TEST_FILENAME, sensor_data);
+	printf("传感器数据个数 : %d \n", nb_sensor_data);
+
+    //初始化地图数据数组
+	ts_map_init(&map);
+    //初始化轨迹数据数组
+	ts_map_init(&trajectory);
+
+	//初始化机器人位姿(地图正中心)
+	position.x = TS_MAP_SIZE / 2.0 * TS_MAP_SCALE;//cm
+	position.y = TS_MAP_SIZE / 2.0 * TS_MAP_SCALE;//cm
+	position.theta = 0;//degree
+    //初始化新位姿
+    position_old = position;
+	///----------------------------------------------------------------------
+    /// 遍历所有激光数据
+    for (int i = 0; i < nb_sensor_data; i++)
+    {
+        if(mapping_mode == 0)
+        {
+            ///根据激光雷达数据和上次坐标位置得到当前的最佳坐标位置
+            position = monte_carlo_move(&sensor_data[i].scan, &map, &position_old, 0);
+        }
+        else if(mapping_mode == 1)
+        {
+            int encoder[2];
+            encoder[0] = sensor_data[i].q1;
+            encoder[1] = sensor_data[i].q2;
+            //printf("#%d : %d %d \n", i, encoder[0], encoder[1]);
+
+            double odom[3];
+            Calculate_robot_pose(encoder, odom);
+
+            position.x = odom[0] * 100;
+            position.y = odom[1] * 100;
+            position.theta = odom[2] * 180 / M_PI;
+        }
+        else{}
+        ///----------------------------------------------------------------------
+        ///最佳坐标位置
+        printf("#%d : %.2lf %.2lf %.2lf \n", i, position.x, position.y, position.theta);
+        ///----------------------------------------------------------------------
+        /// Record data
+        position_old = position;   //记录机器人位姿
+        ///----------------------------------------------------------------------
+        ///更新地图
+        ts_map_update(&sensor_data[i].scan, &map, &position, 50, TEST_HOLE_WIDTH);
+        ///----------------------------------------------------------------------
+        ///显示
+        int x = (int)floor(position.x / TS_MAP_SCALE + 0.5);
+        int y = ((int)floor(position.y / TS_MAP_SCALE + 0.5));
+        if (x >= 0 && y >= 0 && x < TS_MAP_SIZE && y < TS_MAP_SIZE)
+        {
+            trajectory.map[y * TS_MAP_SIZE + x] = 254;
+        }
+        draw_map(&map, &trajectory, 2048, 2048);
+    }
+    ///----------------------------------------------------------------------
+    printf("Done!\n");
+    //cv::imwrite("tinyslam.png",image);
+    cv::waitKey(0);/// 遍历所有激光数据
+	///----------------------------------------------------------------------
+	return 0;
+}
