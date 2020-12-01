@@ -4,7 +4,7 @@ C++ sample codes for robotics algorithms.
 
 This is the C++ implementation of the [PythonRobotics](https://github.com/AtsushiSakai/PythonRobotics), some part of code refers to [CppRobotics](https://github.com/onlytailei/CppRobotics).
 
-# Requirment
+# Requirements
 - cmake
 - opencv 3.3.1
 - Eigen 3.3
